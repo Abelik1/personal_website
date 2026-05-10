@@ -43,6 +43,19 @@ export type ThesisSlide = {
   points: string[];
 };
 
+export type ThesisStorySection = {
+  eyebrow: string;
+  title: string;
+  image: string;
+  body: string;
+  points: string[];
+};
+
+export type ThesisTechnicalItem = {
+  title: string;
+  body: string;
+};
+
 export const profile = {
   name: "Alexander Belik",
   title: "Theoretical Physics | AI Systems | Scientific Software",
@@ -307,6 +320,92 @@ export const workstreams: Workstream[] = [
     area: "Quantum thermodynamics",
     title: "Locally thermal correlations",
     description: "The capstone studies how correlations store global athermality when every subsystem already looks thermal."
+  }
+];
+
+export const thesisStorySections: ThesisStorySection[] = [
+  {
+    eyebrow: "Motivation",
+    title: "Correlations can store thermodynamic resource.",
+    image: "/thesis-slides/capstone-slide-03.png",
+    body:
+      "The project starts from information thermodynamics: correlations are not just bookkeeping, they can carry usable structure. The question is what can be done with that structure when the allowed operations cannot create extra free energy.",
+    points: [
+      "Treat equilibrium as the free reference point.",
+      "Classify transformations that preserve the Gibbs state.",
+      "Ask what remains when local systems already look thermal."
+    ]
+  },
+  {
+    eyebrow: "Setup",
+    title: "Local thermality freezes the local physics.",
+    image: "/thesis-slides/capstone-slide-06.png",
+    body:
+      "A bipartite state is locally thermal when each subsystem reduces to the same Gibbs state. Locally, both sides look equilibrated. Globally, the joint state can still contain correlations, coherence, or entanglement.",
+    points: [
+      "Both partial traces are fixed to the Gibbs state.",
+      "The global state may still be far from the product equilibrium.",
+      "This isolates correlations as the remaining non-equilibrium feature."
+    ]
+  },
+  {
+    eyebrow: "Key identity",
+    title: "On the locally thermal set, athermality becomes correlation.",
+    image: "/thesis-slides/capstone-slide-08.png",
+    body:
+      "Because the marginals are fixed, the relative entropy distance to global equilibrium reduces to mutual information. This gives the project its central interpretation: in this constrained setting, global athermality is stored in correlations.",
+    points: [
+      "Relative entropy measures distance from equilibrium.",
+      "Mutual information measures total correlation.",
+      "For locally thermal states, these quantities coincide."
+    ]
+  },
+  {
+    eyebrow: "Operations",
+    title: "Global and local control give different resource orderings.",
+    image: "/thesis-slides/capstone-slide-12.png",
+    body:
+      "Global Gibbs-preserving maps can coordinate across the bipartite system. Local Gibbs-preserving maps force each side to act independently. The project compares how the reachable states change when that coordination is removed.",
+    points: [
+      "Global GP preserves the joint Gibbs state.",
+      "Local GP preserves the local Gibbs state on each side.",
+      "Local restrictions can create incomparability between states."
+    ]
+  },
+  {
+    eyebrow: "Method",
+    title: "Convertibility becomes a semidefinite program.",
+    image: "/thesis-slides/capstone-slide-16.png",
+    body:
+      "A quantum channel can be represented by its Choi matrix. Complete positivity, trace preservation, Gibbs preservation, and the desired state mapping all become matrix constraints, so the conversion question can be tested numerically.",
+    points: [
+      "The Choi matrix must be positive semidefinite.",
+      "Trace preservation is a linear constraint.",
+      "Gibbs preservation and state conversion are also linear constraints."
+    ]
+  }
+];
+
+export const thesisTechnicalItems: ThesisTechnicalItem[] = [
+  {
+    title: "Geometry of the LT set",
+    body:
+      "The locally thermal states form a spectrahedron: a convex affine slice of the positive semidefinite cone with fixed marginal constraints."
+  },
+  {
+    title: "Two-qubit parameterization",
+    body:
+      "For symmetric two-qubit systems, the correlation sector can be represented by a real 3 by 3 matrix of Pauli correlation coefficients."
+  },
+  {
+    title: "Global versus local convertibility",
+    body:
+      "Global Gibbs-preserving maps are tested against local Gibbs-preserving maps to identify which correlations require coordinated bipartite control."
+  },
+  {
+    title: "Ray and slice tests",
+    body:
+      "One-dimensional LT rays and diagonal/covariant slices give tractable windows into the full nine-dimensional two-qubit geometry."
   }
 ];
 

@@ -25,7 +25,8 @@ import {
   profile,
   projects,
   skillClusters,
-  thesisSlides,
+  thesisStorySections,
+  thesisTechnicalItems,
   workstreams,
   type Project
 } from "./content";
@@ -40,7 +41,8 @@ const portfolioNavItems = [
 
 const thesisNavItems = [
   { label: "Overview", href: "#thesis-overview" },
-  { label: "Slides", href: "#thesis-slides" },
+  { label: "Explainer", href: "#thesis-explainer" },
+  { label: "Technical", href: "#thesis-technical" },
   { label: "Contact", href: "#contact" }
 ];
 
@@ -55,14 +57,21 @@ const timeline = {
   endMonth: 2026 * 12 + 6,
   width: 1680,
   pad: 96,
-  baseY: 300
+  baseY: 410
 };
 
 const laneY = {
-  "top-high": 150,
-  "top-low": 212,
-  "bottom-low": 402,
-  "bottom-high": 474
+  "top-high": 244,
+  "top-low": 306,
+  "bottom-low": 514,
+  "bottom-high": 574
+};
+
+const cardLaneY = {
+  "top-high": 28,
+  "top-low": 154,
+  "bottom-low": 610,
+  "bottom-high": 610
 };
 
 const yearTicks = [2021, 2022, 2023, 2024, 2025, 2026];
@@ -319,7 +328,10 @@ function ResearchFeature({ onOpenThesis }: { onOpenThesis: () => void }) {
           <div className="beam beam-one" />
           <div className="beam beam-two" />
           <div className="beam beam-three" />
-          <p>D(rho || Gamma) = mutual information on the locally thermal manifold</p>
+          <div className="lt-equation" aria-label="Relative entropy equals mutual information on locally thermal states">
+            <span>D(ρ ∥ Γ) = I(A : A′)</span>
+            <small>on the locally thermal manifold</small>
+          </div>
         </div>
       </div>
     </section>
@@ -385,7 +397,7 @@ function ExperienceTimeline() {
         <div className="timeline-stage" style={{ width: timeline.width }}>
           <svg
             className="timeline-svg"
-            viewBox={`0 0 ${timeline.width} 620`}
+            viewBox={`0 0 ${timeline.width} 820`}
             role="img"
             aria-label="Horizontal experience timeline from 2021 to 2026"
           >
@@ -406,11 +418,13 @@ function ExperienceTimeline() {
 
             <path
               className="timeline-main-thread halo"
-              d={`M ${timeline.pad} ${timeline.baseY} C 430 234, 620 286, 850 260 S 1260 222, ${timeline.width - timeline.pad} ${timeline.baseY}`}
+              d={`M ${timeline.pad} ${timeline.baseY} L ${timeline.width - timeline.pad} ${timeline.baseY}`}
+              stroke="rgba(112, 225, 209, 0.32)"
             />
             <path
               className="timeline-main-thread"
-              d={`M ${timeline.pad} ${timeline.baseY} C 430 234, 620 286, 850 260 S 1260 222, ${timeline.width - timeline.pad} ${timeline.baseY}`}
+              d={`M ${timeline.pad} ${timeline.baseY} L ${timeline.width - timeline.pad} ${timeline.baseY}`}
+              stroke="url(#mainThreadGradient)"
             />
 
             {yearTicks.map((year) => {
@@ -455,8 +469,8 @@ function ExperienceTimeline() {
                 key={`${item.period}-${item.role}`}
                 style={{
                   left: midpoint,
-                  top: isTop ? y - 18 : y + 18,
-                  width: Math.min(330, Math.max(250, endX - startX + 80))
+                  top: cardLaneY[item.lane],
+                  width: Math.min(350, Math.max(270, endX - startX + 110))
                 }}
               >
                 <time>{item.period}</time>
@@ -708,29 +722,67 @@ function ThesisPage() {
         </div>
       </section>
 
-      <section className="section thesis-slide-section" id="thesis-slides">
+      <section className="section thesis-explainer-section" id="thesis-explainer">
         <div className="section-heading">
-          <p className="eyebrow">Presentation narrative</p>
-          <h2>Built from the current capstone presentation PDF.</h2>
+          <p className="eyebrow">Simple explanation</p>
+          <h2>The project, explained from the presentation story rather than slide-by-slide.</h2>
         </div>
-        <div className="thesis-slide-list">
-          {thesisSlides.map((slide, index) => (
-            <article className="thesis-slide-card" key={slide.title}>
-              <div className="slide-image-wrap">
-                <img src={slide.image} alt={`${slide.title} slide render`} loading="lazy" />
+        <div className="thesis-story-list">
+          {thesisStorySections.map((section, index) => (
+            <article className="thesis-story-card" key={section.title}>
+              <div className="story-image-wrap">
+                <img src={section.image} alt={`${section.title} presentation visual`} loading="lazy" />
               </div>
-              <div className="slide-copy">
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <h3>{slide.title}</h3>
-                <p>{slide.body}</p>
+              <div className="story-copy">
+                <span>{String(index + 1).padStart(2, "0")} / {section.eyebrow}</span>
+                <h3>{section.title}</h3>
+                <p>{section.body}</p>
                 <ul>
-                  {slide.points.map((point) => (
+                  {section.points.map((point) => (
                     <li key={point}>{point}</li>
                   ))}
                 </ul>
               </div>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="section thesis-technical-section" id="thesis-technical">
+        <div className="section-heading">
+          <p className="eyebrow">Technical overview</p>
+          <h2>The mathematical version, without burying the reader in the full report.</h2>
+        </div>
+        <div className="technical-layout">
+          <div className="technical-equations">
+            <EquationBlock />
+            <div className="equation-block compact" aria-label="Free energy and mutual information equation">
+              <div className="equation-line">
+                <span>D(ρ ∥ Γ) = I(A : A′)</span>
+              </div>
+              <div className="equation-line secondary">
+                <span>Γ = γ ⊗ γ</span>
+              </div>
+            </div>
+          </div>
+          <div className="technical-card-grid">
+            {thesisTechnicalItems.map((item) => (
+              <article className="technical-card" key={item.title}>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+        <div className="technical-actions">
+          <LinkButton href={profile.thesis}>
+            <Download size={17} />
+            Download full thesis
+          </LinkButton>
+          <LinkButton href={profile.capstoneSlides} variant="ghost">
+            <Images size={17} />
+            Download presentation
+          </LinkButton>
         </div>
       </section>
 
