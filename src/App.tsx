@@ -270,12 +270,50 @@ function ProjectVisual({ project }: { project: Project }) {
   );
 }
 
-function ProjectCard({ project, featured = false }: { project: Project; featured?: boolean }) {
+function arrangeProjectsForOpenRow(items: Project[], openTitle: string | null) {
+  if (!openTitle) return items;
+
+  const openIndex = items.findIndex((project) => project.title === openTitle);
+  if (openIndex < 0) return items;
+
+  const rowStart = Math.floor(openIndex / 3) * 3;
+  const rowEnd = rowStart + 3;
+  const openProject = items[openIndex];
+  const rowMates = items.slice(rowStart, rowEnd).filter((project) => project.title !== openTitle);
+
+  return [
+    ...items.slice(0, rowStart),
+    openProject,
+    ...rowMates,
+    ...items.slice(rowEnd)
+  ];
+}
+
+function ProjectCard({
+  project,
+  featured = false,
+  isOpen = false,
+  onToggle
+}: {
+  project: Project;
+  featured?: boolean;
+  isOpen?: boolean;
+  onToggle: () => void;
+}) {
   const Icon = projectIcons[project.accent];
 
   return (
-    <details className={`project-card accent-${project.accent} ${featured ? "featured" : ""}`}>
-      <summary className="project-summary-panel">
+    <details
+      open={isOpen}
+      className={`project-card accent-${project.accent} ${featured ? "featured" : ""}`}
+    >
+      <summary
+        className="project-summary-panel"
+        onClick={(event) => {
+          event.preventDefault();
+          onToggle();
+        }}
+      >
         <ProjectVisual project={project} />
         <div className="project-card__top">
           <div>
@@ -293,7 +331,7 @@ function ProjectCard({ project, featured = false }: { project: Project; featured
           ))}
         </div>
         <span className="expand-cue">
-          Open details
+          {isOpen ? "Close details" : "Open details"}
           <ChevronDown size={16} />
         </span>
       </summary>
@@ -425,6 +463,7 @@ function ExperienceTimeline() {
       <div className="timeline-help">
         <span>Drag timeline</span>
         <span>Branch length shows time spent in each role</span>
+        <span>Completed roles merge back into the main line</span>
       </div>
       <div
         ref={scrollerRef}
@@ -501,15 +540,27 @@ function ExperienceTimeline() {
               const startX = xForDate(item.start);
               const endX = xForDate(item.end);
               const y = laneY[item.lane];
-              const curveX = Math.min(startX + 90, endX - 10);
+              const span = endX - startX;
+              const curveX = Math.min(startX + Math.max(42, span * 0.28), endX - 12);
+              const isCurrent = item.period.toLowerCase().includes("present");
+              const holdEndX = isCurrent ? endX : startX + span * 0.72;
+              const branchPath = isCurrent
+                ? `M ${startX} ${timeline.baseY} C ${startX + 28} ${timeline.baseY}, ${startX + 34} ${y}, ${curveX} ${y} L ${endX} ${y}`
+                : `M ${startX} ${timeline.baseY} C ${startX + 28} ${timeline.baseY}, ${startX + 34} ${y}, ${curveX} ${y} L ${holdEndX} ${y} C ${holdEndX + span * 0.16} ${y}, ${endX - span * 0.14} ${timeline.baseY}, ${endX} ${timeline.baseY}`;
               const isTop = y < timeline.baseY;
               return (
-                <g className={`timeline-branch ${isTop ? "branch-top" : "branch-bottom"}`} key={`${item.period}-${item.role}`}>
+                <g
+                  className={`timeline-branch ${isTop ? "branch-top" : "branch-bottom"} ${isCurrent ? "branch-current" : "branch-complete"}`}
+                  key={`${item.period}-${item.role}`}
+                >
                   <path
-                    d={`M ${startX} ${timeline.baseY} C ${startX + 28} ${timeline.baseY}, ${startX + 34} ${y}, ${curveX} ${y} L ${endX} ${y}`}
+                    d={branchPath}
                   />
                   <circle className="branch-start" cx={startX} cy={timeline.baseY} r="6" />
-                  <circle className="branch-end" cx={endX} cy={y} r="4.5" />
+                  <circle className="branch-end" cx={endX} cy={isCurrent ? y : timeline.baseY} r={isCurrent ? "4.5" : "7"} />
+                  {!isCurrent && (
+                    <circle className="branch-merge-pulse" cx={endX} cy={timeline.baseY} r="13" />
+                  )}
                 </g>
               );
             })}
@@ -643,8 +694,9 @@ function WorkstreamsSection() {
 }
 
 function PortfolioPage({ onOpenThesis }: { onOpenThesis: () => void }) {
-  const featuredProjects = projects.slice(0, 3);
-  const additionalProjects = projects.slice(3);
+  const [openProjectTitle, setOpenProjectTitle] = useState<string | null>(null);
+  const displayedProjects = arrangeProjectsForOpenRow(projects, openProjectTitle);
+  const featuredProjectTitles = new Set(projects.slice(0, 3).map((project) => project.title));
 
   return (
     <>
@@ -715,14 +767,17 @@ function PortfolioPage({ onOpenThesis }: { onOpenThesis: () => void }) {
           <p className="eyebrow">Featured work</p>
           <h2>Systems that move between theory, data, and useful interfaces.</h2>
         </div>
-        <div className="featured-grid">
-          {featuredProjects.map((project) => (
-            <ProjectCard key={project.title} project={project} featured />
-          ))}
-        </div>
-        <div className="project-grid">
-          {additionalProjects.map((project) => (
-            <ProjectCard key={project.title} project={project} />
+        <div className="featured-grid work-grid">
+          {displayedProjects.map((project) => (
+            <ProjectCard
+              key={project.title}
+              project={project}
+              featured={featuredProjectTitles.has(project.title)}
+              isOpen={openProjectTitle === project.title}
+              onToggle={() =>
+                setOpenProjectTitle((current) => (current === project.title ? null : project.title))
+              }
+            />
           ))}
         </div>
       </section>
