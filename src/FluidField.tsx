@@ -108,12 +108,23 @@ export function FluidField() {
       }
 
       context.globalCompositeOperation = "source-over";
-      context.fillStyle = "rgba(6, 9, 11, 0.12)";
+      context.fillStyle = "rgba(6, 9, 11, 0.09)";
       context.fillRect(0, 0, width, height);
       context.globalCompositeOperation = "lighter";
-      context.lineWidth = 1.05;
+      context.lineWidth = 1.18;
 
       const pointerFresh = pointer.active && time - pointer.lastMove < 900;
+
+      if (pointerFresh) {
+        const glow = context.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 105);
+        glow.addColorStop(0, "rgba(112, 225, 209, 0.12)");
+        glow.addColorStop(0.36, "rgba(242, 184, 102, 0.055)");
+        glow.addColorStop(1, "rgba(112, 225, 209, 0)");
+        context.fillStyle = glow;
+        context.beginPath();
+        context.arc(pointer.x, pointer.y, 105, 0, Math.PI * 2);
+        context.fill();
+      }
 
       for (const particle of particles) {
         particle.px = particle.x;
@@ -127,8 +138,8 @@ export function FluidField() {
           const dx = particle.x - pointer.x;
           const dy = particle.y - pointer.y;
           const distanceSq = dx * dx + dy * dy;
-          if (distanceSq < 34000 && distanceSq > 8) {
-            const force = (1 - distanceSq / 34000) * 0.32;
+          if (distanceSq < 62000 && distanceSq > 8) {
+            const force = (1 - distanceSq / 62000) * 0.58;
             const invDistance = 1 / Math.sqrt(distanceSq);
             particle.vx += (-dy * invDistance + dx * invDistance * 0.12) * force;
             particle.vy += (dx * invDistance + dy * invDistance * 0.12) * force;
@@ -153,8 +164,8 @@ export function FluidField() {
           continue;
         }
 
-        const alpha = Math.min(0.32, 0.05 + Math.hypot(particle.vx, particle.vy) * 0.09);
-        context.strokeStyle = `hsla(${particle.hue}, 88%, 65%, ${alpha})`;
+        const alpha = Math.min(0.52, 0.09 + Math.hypot(particle.vx, particle.vy) * 0.14);
+        context.strokeStyle = `hsla(${particle.hue}, 92%, 68%, ${alpha})`;
         context.beginPath();
         context.moveTo(particle.px, particle.py);
         context.lineTo(particle.x, particle.y);
