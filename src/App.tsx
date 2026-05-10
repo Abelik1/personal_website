@@ -100,6 +100,16 @@ const timeline = {
   baseY: 410
 };
 
+const verticalTimeline = {
+  width: 1180,
+  height: 1460,
+  padY: 110,
+  centerX: 590,
+  leftCardX: 54,
+  rightCardX: 760,
+  cardWidth: 360
+};
+
 const laneY = {
   "top-high": 244,
   "top-low": 306,
@@ -114,8 +124,8 @@ const cardLaneY = {
   "bottom-high": 610
 };
 
-const timelineThreadColors = ["#70e1d1", "#c4f87b", "#f2b866", "#8cb7ff", "#ff8fb3"];
-const timelineFutureThreadColors = ["#9be7df", "#d5f2a8", "#efcb95", "#acc8f5", "#f1a9c1"];
+const timelineThreadColors = ["#ffb35c", "#d8ff6f", "#ff6f9f", "#c58cff", "#ffdf6e"];
+const timelineFutureThreadColors = ["#efcb95", "#d5f2a8", "#f1a9c1", "#cdb2f4", "#f1dfa3"];
 const timelineExperienceThreadIndices = [4, 10, 7, 12, 2];
 const timelineBundleThreads = [
   { y: -28, color: "#d7fff8", alpha: 0.28 },
@@ -153,6 +163,13 @@ function xForYear(year: number) {
   const span = timeline.endMonth - timeline.startMonth;
   const usableWidth = timeline.width - timeline.pad * 2;
   return timeline.pad + ((month - timeline.startMonth) / span) * usableWidth;
+}
+
+function yForDate(value: string) {
+  const month = toMonth(value);
+  const span = timeline.endMonth - timeline.startMonth;
+  const usableHeight = verticalTimeline.height - verticalTimeline.padY * 2;
+  return verticalTimeline.padY + ((month - timeline.startMonth) / span) * usableHeight;
 }
 
 function LinkButton({
@@ -440,39 +457,7 @@ function ResearchFeature({ onOpenThesis }: { onOpenThesis: () => void }) {
 }
 
 function ExperienceTimeline() {
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-
-  const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-
-    dragRef.current = {
-      active: true,
-      startX: event.clientX,
-      scrollLeft: scroller.scrollLeft
-    };
-    setIsDragging(true);
-    scroller.setPointerCapture(event.pointerId);
-  };
-
-  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    const scroller = scrollerRef.current;
-    if (!scroller || !dragRef.current.active) return;
-
-    const delta = event.clientX - dragRef.current.startX;
-    scroller.scrollLeft = dragRef.current.scrollLeft - delta;
-  };
-
-  const stopDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    const scroller = scrollerRef.current;
-    dragRef.current.active = false;
-    setIsDragging(false);
-    if (scroller?.hasPointerCapture(event.pointerId)) {
-      scroller.releasePointerCapture(event.pointerId);
-    }
-  };
+  const orderedExperiences = [...experiences].sort((a, b) => toMonth(a.start) - toMonth(b.start));
 
   return (
     <section className="section" id="experience">
@@ -481,29 +466,18 @@ function ExperienceTimeline() {
         <h2>Research, teaching, product engineering, and lab automation.</h2>
       </div>
       <div className="timeline-help">
-        <span>Drag timeline</span>
-        <span>Coloured main threads show time spent in each role</span>
+        <span>Scroll through the timeline</span>
+        <span>Pastel threads inherit colour after each branch point</span>
         <span>X marks the end of a branch</span>
       </div>
-      <div
-        ref={scrollerRef}
-        className={`timeline-scroll ${isDragging ? "dragging" : ""}`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={stopDrag}
-        onPointerCancel={stopDrag}
-        onPointerLeave={(event) => {
-          if (dragRef.current.active) stopDrag(event);
-        }}
-      >
-        <div className="timeline-stage" style={{ width: timeline.width }}>
+      <div className="timeline-scroll">
+        <div className="timeline-stage">
           <div
             className="timeline-spine"
             aria-hidden="true"
             style={{
-              left: timeline.pad,
-              right: timeline.pad,
-              top: timeline.baseY
+              top: verticalTimeline.padY,
+              height: verticalTimeline.height - verticalTimeline.padY * 2
             }}
           >
             {timelineBundleThreads.map((thread, index) => (
@@ -524,9 +498,9 @@ function ExperienceTimeline() {
           </div>
           <svg
             className="timeline-svg"
-            viewBox={`0 0 ${timeline.width} 820`}
+            viewBox={`0 0 ${verticalTimeline.width} ${verticalTimeline.height}`}
             role="img"
-            aria-label="Horizontal experience timeline from 2021 to 2026"
+            aria-label="Vertical experience timeline from 2021 to 2026"
           >
             <defs>
               <filter id="timelineGlow" x="-20%" y="-80%" width="140%" height="260%">
@@ -545,67 +519,73 @@ function ExperienceTimeline() {
 
             <path
               className="timeline-main-thread halo"
-              d={`M ${timeline.pad} ${timeline.baseY} L ${timeline.width - timeline.pad} ${timeline.baseY}`}
+              d={`M ${verticalTimeline.centerX} ${verticalTimeline.padY} L ${verticalTimeline.centerX} ${verticalTimeline.height - verticalTimeline.padY}`}
               stroke="rgba(112, 225, 209, 0.2)"
             />
             <path
               className="timeline-main-thread"
-              d={`M ${timeline.pad} ${timeline.baseY} L ${timeline.width - timeline.pad} ${timeline.baseY}`}
+              d={`M ${verticalTimeline.centerX} ${verticalTimeline.padY} L ${verticalTimeline.centerX} ${verticalTimeline.height - verticalTimeline.padY}`}
               stroke="rgba(213, 230, 223, 0.2)"
             />
 
-            {experiences.map((item, index) => {
-              const startX = xForDate(item.start);
+            {orderedExperiences.map((item, index) => {
+              const startY = yForDate(item.start);
               const threadIndex =
                 timelineExperienceThreadIndices[index] ?? index % timelineBundleThreads.length;
               const offset = timelineBundleThreads[threadIndex].y;
               const color = timelineFutureThreadColors[index % timelineFutureThreadColors.length];
-              const timelineEndX = timeline.width - timeline.pad;
+              const timelineEndY = verticalTimeline.height - verticalTimeline.padY;
               return (
                 <path
                   className={`timeline-future-thread thread-${threadIndex}`}
                   key={`thread-${item.period}-${item.role}`}
-                  d={`M ${startX} ${timeline.baseY + offset} C ${startX + 130} ${timeline.baseY + offset - 3}, ${timelineEndX - 130} ${timeline.baseY + offset + 3}, ${timelineEndX} ${timeline.baseY + offset}`}
+                  d={`M ${verticalTimeline.centerX + offset} ${startY} C ${verticalTimeline.centerX + offset - 3} ${startY + 140}, ${verticalTimeline.centerX + offset + 3} ${timelineEndY - 140}, ${verticalTimeline.centerX + offset} ${timelineEndY}`}
                   stroke={color}
                 />
               );
             })}
 
             {yearTicks.map((year) => {
-              const x = xForYear(year);
+              const y = yForDate(`${year}-01`);
               return (
                 <g key={year} className="timeline-tick">
-                  <line x1={x} x2={x} y1={timeline.baseY - 18} y2={timeline.baseY + 18} />
-                  <text x={x} y={timeline.baseY + 48}>
+                  <line
+                    x1={verticalTimeline.centerX - 28}
+                    x2={verticalTimeline.centerX + 28}
+                    y1={y}
+                    y2={y}
+                  />
+                  <text x={verticalTimeline.centerX + 52} y={y + 5}>
                     {year}
                   </text>
                 </g>
               );
             })}
 
-            {experiences.map((item, index) => {
-              const startX = xForDate(item.start);
-              const endX = xForDate(item.end);
-              const y = laneY[item.lane];
-              const span = endX - startX;
+            {orderedExperiences.map((item, index) => {
+              const startY = yForDate(item.start);
+              const endY = yForDate(item.end);
               const threadIndex =
                 timelineExperienceThreadIndices[index] ?? index % timelineBundleThreads.length;
               const offset = timelineBundleThreads[threadIndex].y;
               const color = timelineThreadColors[index % timelineThreadColors.length];
-              const curveX = Math.min(startX + Math.max(42, span * 0.28), endX - 12);
-              const branchPath = `M ${startX} ${timeline.baseY + offset} C ${startX + 28} ${timeline.baseY + offset}, ${startX + 34} ${y}, ${curveX} ${y} L ${endX} ${y}`;
-              const isTop = y < timeline.baseY;
+              const side = index % 2 === 0 ? "left" : "right";
+              const direction = side === "left" ? -1 : 1;
+              const endX =
+                side === "left" ? verticalTimeline.leftCardX + verticalTimeline.cardWidth : verticalTimeline.rightCardX;
+              const endMarkerY = endY;
+              const branchPath = `M ${verticalTimeline.centerX + offset} ${startY} C ${verticalTimeline.centerX + direction * 70} ${startY + 18}, ${endX - direction * 82} ${endMarkerY - 24}, ${endX} ${endMarkerY}`;
               return (
                 <g
-                  className={`timeline-branch ${isTop ? "branch-top" : "branch-bottom"}`}
+                  className={`timeline-branch branch-${side}`}
                   key={`${item.period}-${item.role}`}
                 >
                   <path className="branch-energy branch-halo" d={branchPath} stroke={color} />
                   <path className="branch-energy branch-core" d={branchPath} stroke={color} />
                   <circle
                     className="branch-start"
-                    cx={startX}
-                    cy={timeline.baseY + offset}
+                    cx={verticalTimeline.centerX + offset}
+                    cy={startY}
                     r="5.5"
                     stroke={color}
                   />
@@ -613,16 +593,16 @@ function ExperienceTimeline() {
                     className="branch-end-x"
                     x1={endX - 7}
                     x2={endX + 7}
-                    y1={y - 7}
-                    y2={y + 7}
+                    y1={endMarkerY - 7}
+                    y2={endMarkerY + 7}
                     stroke={color}
                   />
                   <line
                     className="branch-end-x"
                     x1={endX - 7}
                     x2={endX + 7}
-                    y1={y + 7}
-                    y2={y - 7}
+                    y1={endMarkerY + 7}
+                    y2={endMarkerY - 7}
                     stroke={color}
                   />
                 </g>
@@ -630,20 +610,19 @@ function ExperienceTimeline() {
             })}
           </svg>
 
-          {experiences.map((item) => {
-            const startX = xForDate(item.start);
-            const endX = xForDate(item.end);
-            const y = laneY[item.lane];
-            const isTop = y < timeline.baseY;
-            const midpoint = startX + (endX - startX) / 2;
+          {orderedExperiences.map((item, index) => {
+            const startY = yForDate(item.start);
+            const endY = yForDate(item.end);
+            const side = index % 2 === 0 ? "left" : "right";
+            const top = Math.max(28, Math.min(verticalTimeline.height - 220, (startY + endY) / 2 - 96));
             return (
               <article
-                className={`timeline-card ${isTop ? "above" : "below"}`}
+                className={`timeline-card side-${side}`}
                 key={`${item.period}-${item.role}`}
                 style={{
-                  left: midpoint,
-                  top: cardLaneY[item.lane],
-                  width: Math.min(350, Math.max(270, endX - startX + 110))
+                  left: side === "left" ? verticalTimeline.leftCardX : verticalTimeline.rightCardX,
+                  top,
+                  width: verticalTimeline.cardWidth
                 }}
               >
                 <time>{item.period}</time>
