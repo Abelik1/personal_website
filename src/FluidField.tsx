@@ -11,6 +11,8 @@ type Particle = {
   life: number;
 };
 
+const BACKGROUND_SPEED = 0.5;
+
 const field = (x: number, y: number, t: number) => {
   const s1 = Math.sin(y * 0.011 + t * 0.00042);
   const s2 = Math.cos(x * 0.009 - t * 0.00036);
@@ -116,13 +118,21 @@ export function FluidField() {
       const pointerFresh = pointer.active && time - pointer.lastMove < 900;
 
       if (pointerFresh) {
-        const glow = context.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 105);
+        const glowRadius = 52.5;
+        const glow = context.createRadialGradient(
+          pointer.x,
+          pointer.y,
+          0,
+          pointer.x,
+          pointer.y,
+          glowRadius
+        );
         glow.addColorStop(0, "rgba(112, 225, 209, 0.12)");
         glow.addColorStop(0.36, "rgba(242, 184, 102, 0.055)");
         glow.addColorStop(1, "rgba(112, 225, 209, 0)");
         context.fillStyle = glow;
         context.beginPath();
-        context.arc(pointer.x, pointer.y, 105, 0, Math.PI * 2);
+        context.arc(pointer.x, pointer.y, glowRadius, 0, Math.PI * 2);
         context.fill();
       }
 
@@ -130,9 +140,9 @@ export function FluidField() {
         particle.px = particle.x;
         particle.py = particle.y;
 
-        const vector = field(particle.x, particle.y, time);
-        particle.vx += vector.x * 0.045;
-        particle.vy += vector.y * 0.045;
+        const vector = field(particle.x, particle.y, time * BACKGROUND_SPEED);
+        particle.vx += vector.x * 0.045 * BACKGROUND_SPEED;
+        particle.vy += vector.y * 0.045 * BACKGROUND_SPEED;
 
         if (pointerFresh) {
           const dx = particle.x - pointer.x;
@@ -149,9 +159,9 @@ export function FluidField() {
 
         particle.vx *= 0.965;
         particle.vy *= 0.965;
-        particle.x += particle.vx + vector.x * 0.62;
-        particle.y += particle.vy + vector.y * 0.62;
-        particle.life += 1;
+        particle.x += (particle.vx + vector.x * 0.62) * BACKGROUND_SPEED;
+        particle.y += (particle.vy + vector.y * 0.62) * BACKGROUND_SPEED;
+        particle.life += BACKGROUND_SPEED;
 
         if (
           particle.x < -30 ||

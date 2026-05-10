@@ -28,7 +28,6 @@ import { FluidField } from "./FluidField";
 import {
   education,
   experiences,
-  identityChips,
   profile,
   projects,
   skillClusters,
@@ -721,7 +720,7 @@ function WorkstreamsSection() {
     <section className="section notes-section">
       <div className="section-heading">
         <p className="eyebrow">Selected threads</p>
-        <h2>Recent work grouped by what it is actually trying to do.</h2>
+        <h2>Recent workstreams.</h2>
       </div>
       <div className="note-grid">
         {workstreams.map((item) => (
@@ -785,22 +784,17 @@ function PortfolioPage({ onOpenThesis }: { onOpenThesis: () => void }) {
               {profile.email}
             </a>
           </div>
-          <div className="identity-row">
-            {identityChips.map((chip) => (
-              <span key={chip}>{chip}</span>
-            ))}
-          </div>
         </div>
         <aside className="hero-panel" aria-label="Current profile">
           <div>
             <p className="eyebrow">Current focus</p>
-            <strong>Physics-trained builder</strong>
-            <span>AI systems, quantum simulation, data tooling, and full-stack products.</span>
+            <strong>Physics, software, and AI systems</strong>
+            <span>Research tools, machine-learning workflows, simulation, and full-stack products.</span>
           </div>
           <div className="signal-stack">
-            <span>Local-first AI</span>
+            <span>Applied machine learning</span>
             <span>Reservoir computing</span>
-            <span>Thermal correlations</span>
+            <span>Scientific simulation</span>
           </div>
         </aside>
       </section>
@@ -929,7 +923,7 @@ function ThesisPage() {
       <section className="section thesis-technical-section" id="thesis-technical">
         <div className="section-heading">
           <p className="eyebrow">Technical overview</p>
-          <h2>The mathematical version, without burying the reader in the full report.</h2>
+          <h2>A concise technical overview.</h2>
         </div>
         <div className="technical-layout">
           <div className="technical-equations">
