@@ -1,19 +1,26 @@
 import {
   ArrowUpRight,
   Atom,
+  BarChart3,
+  Bot,
   BrainCircuit,
   ChevronDown,
   Cpu,
+  Database,
   Download,
   FileText,
+  FlaskConical,
   Github,
   Images,
   Linkedin,
   Mail,
   MapPin,
   Orbit,
+  Repeat2,
+  Route,
   Terminal,
-  Waves
+  Waves,
+  Workflow
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useRef, useState } from "react";
@@ -50,6 +57,39 @@ const projectIcons: Record<Project["accent"], LucideIcon> = {
   cyan: Waves,
   green: Cpu,
   amber: BrainCircuit
+};
+
+type SkillLogo =
+  | { kind: "brand"; slug: string; label?: string }
+  | { kind: "icon"; Icon: LucideIcon };
+
+const brandLogoUrl = (slug: string) => `https://cdn.simpleicons.org/${slug}`;
+
+const skillLogos: Record<string, SkillLogo> = {
+  Python: { kind: "brand", slug: "python" },
+  NumPy: { kind: "brand", slug: "numpy" },
+  PyTorch: { kind: "brand", slug: "pytorch" },
+  Mathematica: { kind: "brand", slug: "wolframmathematica", label: "Wolfram Mathematica" },
+  "C/C++ simulations": { kind: "brand", slug: "cplusplus", label: "C++" },
+  Matplotlib: { kind: "brand", slug: "matplotlib" },
+  React: { kind: "brand", slug: "react" },
+  TypeScript: { kind: "brand", slug: "typescript" },
+  FastAPI: { kind: "brand", slug: "fastapi" },
+  SQLite: { kind: "brand", slug: "sqlite" },
+  "UX collaboration": { kind: "brand", slug: "figma", label: "Figma" },
+  Figma: { kind: "brand", slug: "figma" },
+  "Local LLM workflows": { kind: "icon", Icon: Bot },
+  "Agent orchestration": { kind: "icon", Icon: Workflow },
+  "Memory systems": { kind: "icon", Icon: Database },
+  "Tool routing": { kind: "icon", Icon: Route },
+  Automation: { kind: "icon", Icon: Cpu },
+  LaTeX: { kind: "brand", slug: "latex" },
+  "Quantum mechanics": { kind: "icon", Icon: Atom },
+  "Statistical mechanics": { kind: "icon", Icon: FlaskConical },
+  QFT: { kind: "icon", Icon: Atom },
+  "Data analysis": { kind: "icon", Icon: BarChart3 },
+  Reproducibility: { kind: "icon", Icon: Repeat2 },
+  "Git / GitHub": { kind: "brand", slug: "github" }
 };
 
 const timeline = {
@@ -258,7 +298,10 @@ function ProjectCard({ project, featured = false }: { project: Project; featured
         </span>
       </summary>
       <div className="project-expanded">
-        <p className="project-expanded-summary">{project.summary}</p>
+        <div className="project-expanded-intro">
+          <strong>Overview</strong>
+          <p className="project-expanded-summary">{project.summary}</p>
+        </div>
         <div className="project-detail">
           <strong>Problem</strong>
           <p>{project.problem}</p>
@@ -395,6 +438,21 @@ function ExperienceTimeline() {
         }}
       >
         <div className="timeline-stage" style={{ width: timeline.width }}>
+          <div
+            className="timeline-spine"
+            aria-hidden="true"
+            style={{
+              left: timeline.pad,
+              right: timeline.pad,
+              top: timeline.baseY
+            }}
+          >
+            <span className="spine-strand strand-one" />
+            <span className="spine-strand strand-two" />
+            <span className="spine-strand strand-three" />
+            <span className="spine-strand strand-four" />
+            <span className="spine-strand strand-five" />
+          </div>
           <svg
             className="timeline-svg"
             viewBox={`0 0 ${timeline.width} 820`}
@@ -490,6 +548,28 @@ function ExperienceTimeline() {
   );
 }
 
+function SkillPill({ skill }: { skill: string }) {
+  const logo = skillLogos[skill];
+
+  return (
+    <span className="skill-pill">
+      {logo?.kind === "brand" && (
+        <img
+          src={brandLogoUrl(logo.slug)}
+          alt=""
+          aria-hidden="true"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+        />
+      )}
+      {logo?.kind === "icon" && <logo.Icon size={15} aria-hidden="true" />}
+      {!logo && <Cpu size={15} aria-hidden="true" />}
+      <span>{skill}</span>
+    </span>
+  );
+}
+
 function SkillCluster() {
   return (
     <section className="section skill-section">
@@ -503,7 +583,7 @@ function SkillCluster() {
             <h3>{cluster.title}</h3>
             <div>
               {cluster.skills.map((skill) => (
-                <span key={skill}>{skill}</span>
+                <SkillPill key={skill} skill={skill} />
               ))}
             </div>
           </article>
@@ -807,25 +887,32 @@ export default function App() {
           AB
         </button>
         <nav aria-label="Primary navigation">
-          <button
-            type="button"
-            className={activeView === "portfolio" ? "active" : ""}
-            onClick={() => openView("portfolio")}
-          >
-            Portfolio
-          </button>
-          <button
-            type="button"
-            className={activeView === "thesis" ? "active" : ""}
-            onClick={() => openView("thesis")}
-          >
-            Thesis
-          </button>
-          {navItems.map((item) => (
-            <a key={item.href} href={item.href}>
-              {item.label}
-            </a>
-          ))}
+          <div className={`view-switch ${activeView}`} role="group" aria-label="Site view">
+            <span className="view-switch-thumb" aria-hidden="true" />
+            <button
+              type="button"
+              className={activeView === "portfolio" ? "active" : ""}
+              aria-pressed={activeView === "portfolio"}
+              onClick={() => openView("portfolio")}
+            >
+              Portfolio
+            </button>
+            <button
+              type="button"
+              className={activeView === "thesis" ? "active" : ""}
+              aria-pressed={activeView === "thesis"}
+              onClick={() => openView("thesis")}
+            >
+              Thesis
+            </button>
+          </div>
+          <div className="nav-links">
+            {navItems.map((item) => (
+              <a key={item.href} href={item.href}>
+                {item.label}
+              </a>
+            ))}
+          </div>
         </nav>
       </header>
 
