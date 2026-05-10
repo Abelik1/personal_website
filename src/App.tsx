@@ -108,12 +108,32 @@ const laneY = {
 };
 
 const cardLaneY = {
-  "top-high": 28,
-  "top-low": 154,
+  "top-high": 18,
+  "top-low": 92,
   "bottom-low": 610,
   "bottom-high": 610
 };
 
+const timelineThreadColors = ["#70e1d1", "#c4f87b", "#f2b866", "#8cb7ff", "#ff8fb3"];
+const timelineFutureThreadColors = ["#9be7df", "#d5f2a8", "#efcb95", "#acc8f5", "#f1a9c1"];
+const timelineExperienceThreadIndices = [4, 10, 7, 12, 2];
+const timelineBundleThreads = [
+  { y: -28, color: "#d7fff8", alpha: 0.28 },
+  { y: -24, color: "#c9f7f0", alpha: 0.24 },
+  { y: -20, color: "#b9eee9", alpha: 0.3 },
+  { y: -16, color: "#e6fff9", alpha: 0.34 },
+  { y: -12, color: "#c4f4ec", alpha: 0.32 },
+  { y: -8, color: "#b6ebe4", alpha: 0.27 },
+  { y: -4, color: "#defcf7", alpha: 0.33 },
+  { y: 0, color: "#c8f8f0", alpha: 0.3 },
+  { y: 4, color: "#eafefa", alpha: 0.25 },
+  { y: 8, color: "#bdeee8", alpha: 0.31 },
+  { y: 12, color: "#d8fff8", alpha: 0.28 },
+  { y: 16, color: "#c2f5ee", alpha: 0.26 },
+  { y: 20, color: "#e1fff9", alpha: 0.29 },
+  { y: 24, color: "#b8ebe5", alpha: 0.23 },
+  { y: 28, color: "#d0faf3", alpha: 0.25 }
+];
 const yearTicks = [2021, 2022, 2023, 2024, 2025, 2026];
 
 function toMonth(value: string) {
@@ -462,8 +482,8 @@ function ExperienceTimeline() {
       </div>
       <div className="timeline-help">
         <span>Drag timeline</span>
-        <span>Branch length shows time spent in each role</span>
-        <span>Completed roles merge back into the main line</span>
+        <span>Coloured main threads show time spent in each role</span>
+        <span>X marks the end of a branch</span>
       </div>
       <div
         ref={scrollerRef}
@@ -486,11 +506,21 @@ function ExperienceTimeline() {
               top: timeline.baseY
             }}
           >
-            <span className="spine-strand strand-one" />
-            <span className="spine-strand strand-two" />
-            <span className="spine-strand strand-three" />
-            <span className="spine-strand strand-four" />
-            <span className="spine-strand strand-five" />
+            {timelineBundleThreads.map((thread, index) => (
+              <span
+                className="spine-strand"
+                key={`${thread.color}-${thread.y}-${index}`}
+                style={
+                  {
+                    "--strand-y": `${thread.y}px`,
+                    "--strand-color": thread.color,
+                    "--strand-alpha": thread.alpha,
+                    "--strand-delay": `${-index * 0.37}s`,
+                    "--strand-duration": `${4.2 + (index % 5) * 0.55}s`
+                  } as React.CSSProperties
+                }
+              />
+            ))}
           </div>
           <svg
             className="timeline-svg"
@@ -516,13 +546,30 @@ function ExperienceTimeline() {
             <path
               className="timeline-main-thread halo"
               d={`M ${timeline.pad} ${timeline.baseY} L ${timeline.width - timeline.pad} ${timeline.baseY}`}
-              stroke="rgba(112, 225, 209, 0.32)"
+              stroke="rgba(112, 225, 209, 0.2)"
             />
             <path
               className="timeline-main-thread"
               d={`M ${timeline.pad} ${timeline.baseY} L ${timeline.width - timeline.pad} ${timeline.baseY}`}
-              stroke="url(#mainThreadGradient)"
+              stroke="rgba(213, 230, 223, 0.2)"
             />
+
+            {experiences.map((item, index) => {
+              const startX = xForDate(item.start);
+              const threadIndex =
+                timelineExperienceThreadIndices[index] ?? index % timelineBundleThreads.length;
+              const offset = timelineBundleThreads[threadIndex].y;
+              const color = timelineFutureThreadColors[index % timelineFutureThreadColors.length];
+              const timelineEndX = timeline.width - timeline.pad;
+              return (
+                <path
+                  className={`timeline-future-thread thread-${threadIndex}`}
+                  key={`thread-${item.period}-${item.role}`}
+                  d={`M ${startX} ${timeline.baseY + offset} C ${startX + 130} ${timeline.baseY + offset - 3}, ${timelineEndX - 130} ${timeline.baseY + offset + 3}, ${timelineEndX} ${timeline.baseY + offset}`}
+                  stroke={color}
+                />
+              );
+            })}
 
             {yearTicks.map((year) => {
               const x = xForYear(year);
@@ -536,31 +583,48 @@ function ExperienceTimeline() {
               );
             })}
 
-            {experiences.map((item) => {
+            {experiences.map((item, index) => {
               const startX = xForDate(item.start);
               const endX = xForDate(item.end);
               const y = laneY[item.lane];
               const span = endX - startX;
+              const threadIndex =
+                timelineExperienceThreadIndices[index] ?? index % timelineBundleThreads.length;
+              const offset = timelineBundleThreads[threadIndex].y;
+              const color = timelineThreadColors[index % timelineThreadColors.length];
               const curveX = Math.min(startX + Math.max(42, span * 0.28), endX - 12);
-              const isCurrent = item.period.toLowerCase().includes("present");
-              const holdEndX = isCurrent ? endX : startX + span * 0.72;
-              const branchPath = isCurrent
-                ? `M ${startX} ${timeline.baseY} C ${startX + 28} ${timeline.baseY}, ${startX + 34} ${y}, ${curveX} ${y} L ${endX} ${y}`
-                : `M ${startX} ${timeline.baseY} C ${startX + 28} ${timeline.baseY}, ${startX + 34} ${y}, ${curveX} ${y} L ${holdEndX} ${y} C ${holdEndX + span * 0.16} ${y}, ${endX - span * 0.14} ${timeline.baseY}, ${endX} ${timeline.baseY}`;
+              const branchPath = `M ${startX} ${timeline.baseY + offset} C ${startX + 28} ${timeline.baseY + offset}, ${startX + 34} ${y}, ${curveX} ${y} L ${endX} ${y}`;
               const isTop = y < timeline.baseY;
               return (
                 <g
-                  className={`timeline-branch ${isTop ? "branch-top" : "branch-bottom"} ${isCurrent ? "branch-current" : "branch-complete"}`}
+                  className={`timeline-branch ${isTop ? "branch-top" : "branch-bottom"}`}
                   key={`${item.period}-${item.role}`}
                 >
-                  <path
-                    d={branchPath}
+                  <path className="branch-energy branch-halo" d={branchPath} stroke={color} />
+                  <path className="branch-energy branch-core" d={branchPath} stroke={color} />
+                  <circle
+                    className="branch-start"
+                    cx={startX}
+                    cy={timeline.baseY + offset}
+                    r="5.5"
+                    stroke={color}
                   />
-                  <circle className="branch-start" cx={startX} cy={timeline.baseY} r="6" />
-                  <circle className="branch-end" cx={endX} cy={isCurrent ? y : timeline.baseY} r={isCurrent ? "4.5" : "7"} />
-                  {!isCurrent && (
-                    <circle className="branch-merge-pulse" cx={endX} cy={timeline.baseY} r="13" />
-                  )}
+                  <line
+                    className="branch-end-x"
+                    x1={endX - 7}
+                    x2={endX + 7}
+                    y1={y - 7}
+                    y2={y + 7}
+                    stroke={color}
+                  />
+                  <line
+                    className="branch-end-x"
+                    x1={endX - 7}
+                    x2={endX + 7}
+                    y1={y + 7}
+                    y2={y - 7}
+                    stroke={color}
+                  />
                 </g>
               );
             })}

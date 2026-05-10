@@ -1508,91 +1508,61 @@ main,
 .timeline-spine {
   position: absolute;
   z-index: 1;
-  height: 62px;
+  height: 86px;
   border-radius: 999px;
   transform: translateY(-50%);
   pointer-events: none;
-  overflow: hidden;
-  filter: drop-shadow(0 0 12px rgba(112, 225, 209, 0.42));
+  overflow: visible;
+  filter:
+    drop-shadow(0 0 12px rgba(112, 225, 209, 0.42))
+    drop-shadow(0 0 26px rgba(140, 183, 255, 0.22));
 }
 
 .timeline-spine::before {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(50% - 2px);
-  height: 4px;
+  left: -2%;
+  right: -2%;
+  top: 50%;
+  height: 76px;
+  transform: translateY(-50%);
   border-radius: inherit;
-  background: linear-gradient(90deg, rgba(112, 225, 209, 0.95), rgba(196, 248, 123, 0.9), rgba(242, 184, 102, 0.9));
-  box-shadow:
-    0 0 12px rgba(112, 225, 209, 0.7),
-    0 0 34px rgba(112, 225, 209, 0.28),
-    0 0 48px rgba(242, 184, 102, 0.22);
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(213, 246, 255, 0.2), rgba(112, 225, 209, 0.08) 42%, transparent 70%),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  opacity: 0.62;
 }
 
 .spine-strand {
   position: absolute;
-  left: -12%;
-  width: 124%;
-  height: 18px;
-  top: calc(50% - 9px);
-  opacity: 0.9;
-  background:
-    radial-gradient(14px 9px at 8px 50%, rgba(112, 225, 209, 0.95), transparent 70%) 0 0 / 46px 100% repeat-x,
-    linear-gradient(90deg, transparent, rgba(112, 225, 209, 0.5), rgba(196, 248, 123, 0.52), rgba(242, 184, 102, 0.5), transparent);
-  mask-image: radial-gradient(18px 12px at 12px 50%, black 56%, transparent 72%);
-  mask-size: 54px 100%;
-  mask-repeat: repeat-x;
-  animation: spineWave 5.8s ease-in-out infinite alternate;
+  left: -3%;
+  width: 106%;
+  height: 3px;
+  top: calc(50% - 1px);
+  opacity: var(--strand-alpha, 0.22);
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--strand-color, #70e1d1) 12%, var(--strand-color, #70e1d1) 88%, transparent);
+  box-shadow:
+    0 0 8px var(--strand-color, #70e1d1),
+    0 0 18px var(--strand-color, #70e1d1),
+    0 0 34px rgba(213, 246, 255, 0.16);
+  animation: spineWave var(--strand-duration, 5.8s) ease-in-out infinite alternate;
+  animation-delay: var(--strand-delay, 0s);
   transform-origin: center;
-}
-
-.strand-one {
-  transform: translateY(-18px) scaleY(0.62);
-  animation-duration: 4.7s;
-}
-
-.strand-two {
-  transform: translateY(-8px) scaleY(0.9);
-  animation-duration: 6.2s;
-  animation-delay: -1.4s;
-  opacity: 0.72;
-}
-
-.strand-three {
-  transform: translateY(0) scaleY(0.52);
-  animation-duration: 3.9s;
-  animation-delay: -0.7s;
-  opacity: 0.86;
-}
-
-.strand-four {
-  transform: translateY(11px) scaleY(0.8);
-  animation-duration: 7.2s;
-  animation-delay: -2.2s;
-  opacity: 0.7;
-}
-
-.strand-five {
-  transform: translateY(20px) scaleY(0.58);
-  animation-duration: 5.3s;
-  animation-delay: -3.1s;
-  opacity: 0.58;
 }
 
 @keyframes spineWave {
   0% {
-    translate: -18px 0;
-    filter: hue-rotate(0deg) blur(0.2px);
+    translate: -10px calc(var(--strand-y, 0px) - 5px);
+    filter: blur(0.15px);
   }
   50% {
-    translate: 14px 0;
-    filter: hue-rotate(14deg) blur(0);
+    translate: 12px calc(var(--strand-y, 0px) + 5px);
+    filter: blur(0);
   }
   100% {
-    translate: 38px 0;
-    filter: hue-rotate(-10deg) blur(0.35px);
+    translate: 24px calc(var(--strand-y, 0px) - 3px);
+    filter: blur(0.25px);
   }
 }
 
@@ -1603,7 +1573,7 @@ main,
   height: 100%;
   overflow: visible;
   pointer-events: none;
-  z-index: 2;
+  z-index: 4;
 }
 
 .timeline-main-thread {
@@ -1614,8 +1584,56 @@ main,
 }
 
 .timeline-main-thread.halo {
-  stroke-width: 18;
-  opacity: 0.32;
+  stroke-width: 44;
+  opacity: 0.42;
+}
+
+.timeline-future-thread {
+  fill: none;
+  stroke-width: 4.4;
+  stroke-linecap: round;
+  opacity: 0.64;
+  filter: url("#timelineGlow");
+  animation: roleThreadFloat 4.2s ease-in-out infinite alternate;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.timeline-future-thread.thread-1,
+.timeline-future-thread.thread-6,
+.timeline-future-thread.thread-11 {
+  animation-duration: 5.7s;
+  animation-delay: -1.2s;
+}
+
+.timeline-future-thread.thread-2,
+.timeline-future-thread.thread-7,
+.timeline-future-thread.thread-12 {
+  animation-duration: 4.3s;
+  animation-delay: -0.6s;
+}
+
+.timeline-future-thread.thread-3,
+.timeline-future-thread.thread-8,
+.timeline-future-thread.thread-13 {
+  animation-duration: 6.4s;
+  animation-delay: -2s;
+}
+
+.timeline-future-thread.thread-4,
+.timeline-future-thread.thread-9,
+.timeline-future-thread.thread-14 {
+  animation-duration: 5.2s;
+  animation-delay: -3.1s;
+}
+
+@keyframes roleThreadFloat {
+  from {
+    transform: translateY(-4px);
+  }
+  to {
+    transform: translateY(4px);
+  }
 }
 
 .timeline-tick line {
@@ -1630,69 +1648,54 @@ main,
   text-anchor: middle;
 }
 
-.timeline-branch path {
+.branch-energy {
   fill: none;
-  stroke: rgba(112, 225, 209, 0.92);
-  stroke-width: 3.4;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: url("#timelineGlow");
+  animation: branchDrift 5s ease-in-out infinite alternate;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
-.timeline-branch.branch-bottom path {
-  stroke: rgba(242, 184, 102, 0.92);
+.branch-halo {
+  stroke-width: 15;
+  opacity: 0.28;
+}
+
+.branch-core {
+  stroke-width: 5.6;
+  opacity: 0.98;
+}
+
+@keyframes branchDrift {
+  from {
+    transform: translateY(-3px);
+  }
+  to {
+    transform: translateY(3px);
+  }
 }
 
 .branch-start {
   fill: var(--bg);
-  stroke: var(--green);
-  stroke-width: 3;
+  stroke-width: 4;
   filter: url("#timelineGlow");
 }
 
-.branch-end {
-  fill: var(--cyan);
-  stroke: rgba(6, 9, 11, 0.88);
-  stroke-width: 2.5;
+.branch-end-x {
+  stroke-width: 4.5;
+  stroke-linecap: round;
   filter: url("#timelineGlow");
-}
-
-.branch-bottom .branch-end {
-  fill: var(--amber);
-}
-
-.branch-complete .branch-end {
-  fill: var(--bg);
-  stroke: var(--green);
-  stroke-width: 3.2;
-}
-
-.branch-bottom.branch-complete .branch-end {
-  stroke: var(--amber);
-}
-
-.branch-merge-pulse {
-  fill: none;
-  stroke: rgba(196, 248, 123, 0.28);
-  stroke-width: 1.5;
-  filter: url("#timelineGlow");
-}
-
-.branch-bottom .branch-merge-pulse {
-  stroke: rgba(242, 184, 102, 0.3);
-}
-
-.branch-current .branch-end {
-  opacity: 0.95;
 }
 
 .timeline-card {
   position: absolute;
-  z-index: 2;
-  padding: 16px;
+  z-index: 3;
+  padding: 14px;
   border: 1px solid rgba(185, 228, 221, 0.2);
   border-radius: var(--radius);
-  background: rgba(10, 17, 19, 0.9);
+  background: rgba(10, 17, 19, 0.82);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28), 0 0 26px rgba(112, 225, 209, 0.08);
   backdrop-filter: blur(16px);
   pointer-events: auto;
