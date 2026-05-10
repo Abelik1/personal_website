@@ -16,7 +16,7 @@ import {
   Waves
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { FluidField } from "./FluidField";
 import {
   education,
@@ -49,6 +49,42 @@ const projectIcons: Record<Project["accent"], LucideIcon> = {
   green: Cpu,
   amber: BrainCircuit
 };
+
+const timeline = {
+  startMonth: 2021 * 12 + 6,
+  endMonth: 2026 * 12 + 6,
+  width: 1680,
+  pad: 96,
+  baseY: 300
+};
+
+const laneY = {
+  "top-high": 150,
+  "top-low": 212,
+  "bottom-low": 402,
+  "bottom-high": 474
+};
+
+const yearTicks = [2021, 2022, 2023, 2024, 2025, 2026];
+
+function toMonth(value: string) {
+  const [year, month] = value.split("-").map(Number);
+  return year * 12 + month - 1;
+}
+
+function xForDate(value: string) {
+  const month = toMonth(value);
+  const span = timeline.endMonth - timeline.startMonth;
+  const usableWidth = timeline.width - timeline.pad * 2;
+  return timeline.pad + ((month - timeline.startMonth) / span) * usableWidth;
+}
+
+function xForYear(year: number) {
+  const month = year * 12;
+  const span = timeline.endMonth - timeline.startMonth;
+  const usableWidth = timeline.width - timeline.pad * 2;
+  return timeline.pad + ((month - timeline.startMonth) / span) * usableWidth;
+}
 
 function LinkButton({
   href,
@@ -291,27 +327,150 @@ function ResearchFeature({ onOpenThesis }: { onOpenThesis: () => void }) {
 }
 
 function ExperienceTimeline() {
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+
+  const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    dragRef.current = {
+      active: true,
+      startX: event.clientX,
+      scrollLeft: scroller.scrollLeft
+    };
+    setIsDragging(true);
+    scroller.setPointerCapture(event.pointerId);
+  };
+
+  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const scroller = scrollerRef.current;
+    if (!scroller || !dragRef.current.active) return;
+
+    const delta = event.clientX - dragRef.current.startX;
+    scroller.scrollLeft = dragRef.current.scrollLeft - delta;
+  };
+
+  const stopDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const scroller = scrollerRef.current;
+    dragRef.current.active = false;
+    setIsDragging(false);
+    if (scroller?.hasPointerCapture(event.pointerId)) {
+      scroller.releasePointerCapture(event.pointerId);
+    }
+  };
+
   return (
     <section className="section" id="experience">
       <div className="section-heading">
         <p className="eyebrow">Experience</p>
         <h2>Research, teaching, product engineering, and lab automation.</h2>
       </div>
-      <div className="timeline">
-        {experiences.map((item) => (
-          <article className="timeline-item" key={`${item.period}-${item.role}`}>
-            <time>{item.period}</time>
-            <div>
-              <h3>{item.role}</h3>
-              <p className="muted">{item.place}</p>
-              <ul>
-                {item.details.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            </div>
-          </article>
-        ))}
+      <div className="timeline-help">
+        <span>Drag timeline</span>
+        <span>Branch length shows time spent in each role</span>
+      </div>
+      <div
+        ref={scrollerRef}
+        className={`timeline-scroll ${isDragging ? "dragging" : ""}`}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={stopDrag}
+        onPointerCancel={stopDrag}
+        onPointerLeave={(event) => {
+          if (dragRef.current.active) stopDrag(event);
+        }}
+      >
+        <div className="timeline-stage" style={{ width: timeline.width }}>
+          <svg
+            className="timeline-svg"
+            viewBox={`0 0 ${timeline.width} 620`}
+            role="img"
+            aria-label="Horizontal experience timeline from 2021 to 2026"
+          >
+            <defs>
+              <filter id="timelineGlow" x="-20%" y="-80%" width="140%" height="260%">
+                <feGaussianBlur stdDeviation="5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <linearGradient id="mainThreadGradient" x1="0%" x2="100%" y1="0%" y2="0%">
+                <stop offset="0%" stopColor="#70e1d1" />
+                <stop offset="48%" stopColor="#c4f87b" />
+                <stop offset="100%" stopColor="#f2b866" />
+              </linearGradient>
+            </defs>
+
+            <path
+              className="timeline-main-thread halo"
+              d={`M ${timeline.pad} ${timeline.baseY} C 430 234, 620 286, 850 260 S 1260 222, ${timeline.width - timeline.pad} ${timeline.baseY}`}
+            />
+            <path
+              className="timeline-main-thread"
+              d={`M ${timeline.pad} ${timeline.baseY} C 430 234, 620 286, 850 260 S 1260 222, ${timeline.width - timeline.pad} ${timeline.baseY}`}
+            />
+
+            {yearTicks.map((year) => {
+              const x = xForYear(year);
+              return (
+                <g key={year} className="timeline-tick">
+                  <line x1={x} x2={x} y1={timeline.baseY - 18} y2={timeline.baseY + 18} />
+                  <text x={x} y={timeline.baseY + 48}>
+                    {year}
+                  </text>
+                </g>
+              );
+            })}
+
+            {experiences.map((item) => {
+              const startX = xForDate(item.start);
+              const endX = xForDate(item.end);
+              const y = laneY[item.lane];
+              const curveX = Math.min(startX + 90, endX - 10);
+              const isTop = y < timeline.baseY;
+              return (
+                <g className={`timeline-branch ${isTop ? "branch-top" : "branch-bottom"}`} key={`${item.period}-${item.role}`}>
+                  <path
+                    d={`M ${startX} ${timeline.baseY} C ${startX + 28} ${timeline.baseY}, ${startX + 34} ${y}, ${curveX} ${y} L ${endX} ${y}`}
+                  />
+                  <circle className="branch-start" cx={startX} cy={timeline.baseY} r="6" />
+                  <circle className="branch-end" cx={endX} cy={y} r="4.5" />
+                </g>
+              );
+            })}
+          </svg>
+
+          {experiences.map((item) => {
+            const startX = xForDate(item.start);
+            const endX = xForDate(item.end);
+            const y = laneY[item.lane];
+            const isTop = y < timeline.baseY;
+            const midpoint = startX + (endX - startX) / 2;
+            return (
+              <article
+                className={`timeline-card ${isTop ? "above" : "below"}`}
+                key={`${item.period}-${item.role}`}
+                style={{
+                  left: midpoint,
+                  top: isTop ? y - 18 : y + 18,
+                  width: Math.min(330, Math.max(250, endX - startX + 80))
+                }}
+              >
+                <time>{item.period}</time>
+                <h3>{item.role}</h3>
+                <p className="muted">{item.place}</p>
+                <ul>
+                  {item.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              </article>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

@@ -17,6 +17,9 @@ export type Project = {
 
 export type Experience = {
   period: string;
+  start: string;
+  end: string;
+  lane: "top-high" | "top-low" | "bottom-low" | "bottom-high";
   role: string;
   place: string;
   details: string[];
@@ -195,6 +198,9 @@ export const projects: Project[] = [
 export const experiences: Experience[] = [
   {
     period: "Oct 2025 - present",
+    start: "2025-10",
+    end: "2026-05",
+    lane: "top-low",
     role: "Teaching Assistant",
     place: "Trinity College Dublin",
     details: [
@@ -204,6 +210,9 @@ export const experiences: Experience[] = [
   },
   {
     period: "Jun 2024 - Dec 2025",
+    start: "2024-06",
+    end: "2025-12",
+    lane: "top-high",
     role: "Software Engineer (EdTech)",
     place: "Grinds360",
     details: [
@@ -213,6 +222,9 @@ export const experiences: Experience[] = [
   },
   {
     period: "Jun 2025 - Sep 2025",
+    start: "2025-06",
+    end: "2025-09",
+    lane: "bottom-high",
     role: "Research Assistant",
     place: "Trinity College Dublin, CRANN Institute",
     details: [
@@ -222,6 +234,9 @@ export const experiences: Experience[] = [
   },
   {
     period: "May 2024 - Sep 2024",
+    start: "2024-05",
+    end: "2024-09",
+    lane: "bottom-low",
     role: "Experimental / Computational Research Assistant",
     place: "Trinity College Dublin",
     details: [
@@ -231,6 +246,9 @@ export const experiences: Experience[] = [
   },
   {
     period: "Jul 2021 - Jan 2024",
+    start: "2021-07",
+    end: "2024-01",
+    lane: "bottom-high",
     role: "Exam Corrector",
     place: "The Dublin Academy of Education",
     details: ["Corrected exams and coursework and supported marking workflows."]
