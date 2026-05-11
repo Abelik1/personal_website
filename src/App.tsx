@@ -710,6 +710,14 @@ function ContactSection() {
           <Linkedin size={17} />
           LinkedIn
         </LinkButton>
+        <LinkButton href={profile.researchGate} variant="ghost">
+          <Atom size={17} />
+          ResearchGate
+        </LinkButton>
+        <LinkButton href={profile.rscPublication} variant="ghost">
+          <FileText size={17} />
+          RSC paper
+        </LinkButton>
       </div>
     </section>
   );
@@ -778,6 +786,10 @@ function PortfolioPage({ onOpenThesis }: { onOpenThesis: () => void }) {
             <ExternalProfileLink href={profile.linkedin}>
               <Linkedin size={17} />
               LinkedIn
+            </ExternalProfileLink>
+            <ExternalProfileLink href={profile.researchGate}>
+              <Atom size={17} />
+              ResearchGate
             </ExternalProfileLink>
             <a href={`mailto:${profile.email}`}>
               <Mail size={17} />
@@ -1022,6 +1034,10 @@ export default function App() {
         <a href={profile.github} target="_blank" rel="noreferrer">
           <Terminal size={16} />
           GitHub
+        </a>
+        <a href={profile.researchGate} target="_blank" rel="noreferrer">
+          <Atom size={16} />
+          ResearchGate
         </a>
       </footer>
     </div>

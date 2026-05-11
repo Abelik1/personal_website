@@ -63,6 +63,8 @@ export const profile = {
   email: "abelik1@outlook.com",
   github: "https://github.com/ABelik1",
   linkedin: "https://www.linkedin.com/in/alexander-belik/",
+  researchGate: "https://www.researchgate.net/profile/Alexander-Belik",
+  rscPublication: "https://pubs.rsc.org/en/content/articlelanding/2026/tc/d6tc00004e",
   softwareCv: "/documents/alexander-belik-software-cv.pdf",
   physicsCv: "/documents/alexander-belik-physics-cv.pdf",
   thesis: "/documents/locally-thermal-from-global-athermality.pdf",
@@ -184,26 +186,27 @@ export const projects: Project[] = [
     visual: "chemistry"
   },
   {
-    title: "Spectroscopy Automation",
-    eyebrow: "Lab tooling",
-    short: "Python experiment-control and data-acquisition tooling for spectroscopy work on ferrofluids and liquid crystals.",
+    title: "Ferronematic Liquid-Crystal Research",
+    eyebrow: "Published experimental research",
+    short: "Python experiment control, spectroscopy data analysis, and ferronematic liquid-crystal research contributing to an RSC publication.",
     summary:
-      "Python control and acquisition tooling for spectroscopy measurements on ferrofluids and liquid crystals under varied experimental conditions.",
+      "Experimental and computational work on ferronematic liquid crystals, combining Python automation, spectroscopy data acquisition, analysis, and research outputs that contributed to co-authored publication work.",
     problem:
-      "Manual experiment control makes spectroscopy data harder to reproduce, structure, and compare across conditions.",
+      "Ferronematic liquid-crystal experiments require reproducible control, structured spectroscopy measurements, and careful analysis across changing material compositions and experimental conditions.",
     built: [
-      "Control system for measurement workflows",
-      "Automated data acquisition and structured logging",
-      "Experiment-facing tooling for repeated lab runs"
+      "Python control system for automated spectroscopy measurement workflows",
+      "Data acquisition and structured logging for repeated experimental runs",
+      "Analysis support for ferronematic liquid-crystal and ferrofluid research",
+      "Research contributions feeding into co-authored liquid-crystal publication work"
     ],
     stack: ["Python", "Instrumentation", "Data acquisition", "Matplotlib", "Research workflow"],
     impact:
-      "Reduced manual friction in experimental data capture and supported cleaner downstream analysis.",
+      "Supported reproducible experimental workflows and downstream data analysis for published ferronematic liquid-crystal research.",
     accent: "amber",
     visual: "spectroscopy",
     link: {
-      label: "Related arXiv",
-      href: "https://arxiv.org/abs/2504.19633"
+      label: "RSC publication",
+      href: profile.rscPublication
     }
   }
 ];
@@ -253,8 +256,9 @@ export const experiences: Experience[] = [
     role: "Experimental / Computational Research Assistant",
     place: "Trinity College Dublin",
     details: [
-      "Created a spectroscopy control system for ferrofluids and liquid crystals.",
-      "Built Python tools for automated data acquisition and experiment control."
+      "Created a Python spectroscopy control system for ferrofluids and ferronematic liquid crystals.",
+      "Built automated acquisition and analysis workflows for repeated experimental data.",
+      "Contributed to liquid-crystal research that led to co-authored publication work."
     ]
   },
   {
@@ -320,6 +324,11 @@ export const workstreams: Workstream[] = [
     area: "Quantum thermodynamics",
     title: "Locally thermal correlations",
     description: "The capstone studies how correlations store global athermality when every subsystem already looks thermal."
+  },
+  {
+    area: "Materials research",
+    title: "Ferronematic liquid crystals",
+    description: "Experimental control, spectroscopy analysis, and co-authored publication work on ferroelectric and hyper-dielectric modes."
   }
 ];
 

@@ -1,0 +1,170 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[a4paper,top=12mm,bottom=12mm,left=13mm,right=13mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{ink}{HTML}{18212D}
+\definecolor{muted}{HTML}{607080}
+\definecolor{rule}{HTML}{C9D2DC}
+\definecolor{accent}{HTML}{0B6F78}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\renewcommand{\familydefault}{\sfdefault}
+\renewcommand\labelitemi{\textcolor{accent}{\raisebox{0.25ex}{\scriptsize$\bullet$}}}
+\setlist[itemize]{leftmargin=12pt,itemsep=2.35pt,topsep=2.8pt,parsep=0pt,partopsep=0pt}
+
+\newcommand{\sectiontitle}[1]{%
+  \vspace{9pt}
+  {\small\bfseries\color{accent}\MakeUppercase{#1}}\par
+  \vspace{2.7pt}{\color{rule}\hrule height 0.55pt}\vspace{5.2pt}
+}
+\newcommand{\sideitem}[2]{%
+{\bfseries #1}\par{\small\color{muted}#2}\par\vspace{6pt}
+}
+\newcommand{\role}[3]{%
+  {\bfseries #1}\hfill{\small\color{muted}#2}\par
+  {\small\color{muted}#3}\par
+}
+\newcommand{\tightrole}[3]{%
+  {\bfseries #1}\hfill{\small\color{muted}#2}\par
+  {\small\color{muted}#3}\par\vspace{2pt}
+}
+
+\begin{document}
+\fontsize{10.15}{12.25}\selectfont
+\color{ink}
+
+{\LARGE\bfseries Alexander Belik}\hfill{\small Dublin, Ireland}\\[-1pt]
+{\large\color{accent} Theoretical Physics \,|\, Quantum Thermodynamics \,|\, Scientific Computing}\hfill{\small +353 85 256 4027}\\[3pt]
+{\small
+\href{mailto:abelik1@outlook.com}{abelik1@outlook.com}
+\quad|\quad
+\href{https://www.linkedin.com/in/alexander-belik/}{linkedin.com/in/alexander-belik}
+\quad|\quad
+\href{https://github.com/ABelik1}{github.com/ABelik1}
+}
+\vspace{7pt}
+
+{\color{rule}\hrule height 0.8pt}
+\vspace{8pt}
+
+\begin{minipage}[t][0.835\textheight][t]{0.315\linewidth}
+\raggedright
+
+\sectiontitle{Profile}
+Fourth-year Theoretical Physics student at Trinity College Dublin, focused on quantum thermodynamics, many-body dynamics, and research software.
+\vspace{4pt}
+
+I build reproducible Python and PyTorch tools that connect analytic models, simulation, machine learning, and experimental data workflows.
+
+\sectiontitle{Education}
+\sideitem{B.A. Theoretical Physics}{Trinity College Dublin, expected 2026}
+{\small Quantum mechanics, statistical mechanics, quantum field theory, and computational physics.}\par\vspace{5pt}
+\sideitem{Leaving Certificate}{The Dublin Academy of Education, 2020--2022}
+
+\sectiontitle{Core Physics}
+{\small
+Quantum thermodynamics\par
+Many-body dynamics\par
+Gibbs-preserving maps\par
+Density matrices and channels\par
+Semidefinite programming\par
+Spectroscopy workflows\par
+Computational chemistry\par
+}
+
+\sectiontitle{Technical Toolkit}
+{\small
+Python, NumPy, SciPy\par
+PyTorch, QuTiP, Optuna\par
+Matplotlib, Mathematica\par
+C/C++ simulations\par
+Docker, SQLite\par
+Git/GitHub, LaTeX\par
+}
+
+\sectiontitle{Research Practice}
+{\small
+Numerical simulation\par
+Data analysis and diagnostics\par
+Hyperparameter tuning\par
+Reproducible pipelines\par
+Technical writing\par
+}
+
+\vfill
+\sectiontitle{Languages}
+{\small English -- fluent\par Russian -- intermediate\par Spanish -- basic}
+
+\end{minipage}
+\hfill
+\begin{minipage}[t][0.835\textheight][t]{0.645\linewidth}
+\raggedright
+
+\sectiontitle{Research Experience}
+
+\role{Local Thermality from Global Athermality}{2025--2026}{Capstone thesis, supervisor: Felix Binder}
+\begin{itemize}
+  \item Studied locally thermal bipartite quantum states with Gibbs marginals, isolating correlations as the remaining thermodynamic resource.
+  \item Characterized the locally thermal set as an affine slice of the positive semidefinite cone.
+  \item Derived a nine-parameter two-qubit normal form and a Schur-complement positivity criterion.
+  \item Analysed diagonal slices, locally thermal rays, commuting qutrit subclasses, and SDP convertibility tests using \(D(\rho\Vert\Gamma)=I(A:B)_\rho\) on the locally thermal manifold.
+\end{itemize}
+\vspace{2pt}
+
+\role{Research Assistant, CRANN Institute}{Jun--Sep 2025}{Trinity College Dublin}
+\begin{itemize}
+  \item Designed Echo State Network reservoir models to learn quantum time-evolution data from simulated spin-chain observables.
+  \item Built a PyTorch ESN toolkit with configurable reservoirs, mixed precision, ridge-regression solvers, Optuna tuning, and structured diagnostics.
+  \item Paired the learning workflow with a Heisenberg-chain simulator and conservation checks for norm, energy, and magnetization.
+\end{itemize}
+\vspace{2pt}
+
+\role{Experimental / Computational Research Assistant}{May--Sep 2024}{Trinity College Dublin}
+\begin{itemize}
+  \item Created Python experiment-control and data-acquisition tooling for spectroscopy measurements on ferrofluids and liquid crystals.
+  \item Automated structured logging and repeatable measurement workflows; related work: \href{https://arxiv.org/abs/2504.19633}{arXiv:2504.19633}.
+\end{itemize}
+\vspace{2pt}
+
+\role{DFT Hamilton / PySCF Work}{2024--2025}{Computational chemistry}
+\begin{itemize}
+  \item Built a Dockerized PySCF workflow for H2 RHF/DFT, open-shell Li UHF, molecular examples, spin-correlation tests, endpoint checks, and custom functional comparisons.
+\end{itemize}
+
+\sectiontitle{Teaching And Technical Work}
+
+\tightrole{Teaching Assistant}{Oct 2025--Present}{Trinity College Dublin}
+\begin{itemize}
+  \item Lead weekly tutorials and problem-solving sessions aligned with lectures.
+  \item Grade assignments and exams with clear, constructive feedback.
+\end{itemize}
+\vspace{2pt}
+
+\tightrole{Software Engineer, EdTech}{2024--2025}{Grinds360}
+\begin{itemize}
+  \item Built Python automation tools for content and workflow pipelines.
+  \item Contributed to product features and UX iteration with technical and non-technical stakeholders.
+\end{itemize}
+
+\vfill
+\sectiontitle{Selected Research Software}
+{\small
+\textbf{EchoState and Heisenberg Chain:} physics-informed reservoir-computing toolkit for quantum dynamics prediction.\\[2pt]
+\textbf{Spectroscopy Automation:} experiment-control and acquisition tooling for cleaner lab data capture.\\[2pt]
+\textbf{PySCF Environment:} reproducible Docker workflow for computational chemistry experiments.
+}
+
+\end{minipage}
+
+\end{document}

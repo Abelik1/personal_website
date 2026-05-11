@@ -1,0 +1,165 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[a4paper,top=12mm,bottom=12mm,left=13mm,right=13mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{ink}{HTML}{18212D}
+\definecolor{muted}{HTML}{607080}
+\definecolor{rule}{HTML}{C9D2DC}
+\definecolor{accent}{HTML}{0B6F78}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\renewcommand{\familydefault}{\sfdefault}
+\renewcommand\labelitemi{\textcolor{accent}{\raisebox{0.25ex}{\scriptsize$\bullet$}}}
+\setlist[itemize]{leftmargin=12pt,itemsep=2.0pt,topsep=2.3pt,parsep=0pt,partopsep=0pt}
+
+\newcommand{\sectiontitle}[1]{%
+  \vspace{8.5pt}
+  {\small\bfseries\color{accent}\MakeUppercase{#1}}\par
+  \vspace{2.5pt}{\color{rule}\hrule height 0.55pt}\vspace{4.8pt}
+}
+\newcommand{\sideitem}[2]{%
+  {\bfseries #1}\par{\small\color{muted}#2}\par\vspace{6pt}
+}
+\newcommand{\role}[3]{%
+  {\bfseries #1}\hfill{\small\color{muted}#2}\par
+  {\small\color{muted}#3}\par
+}
+\newcommand{\project}[3]{%
+  {\bfseries #1}\hfill{\small\color{muted}#2}\par
+  {\small #3}\par\vspace{4pt}
+}
+
+\begin{document}
+\fontsize{10.0}{12.0}\selectfont
+\color{ink}
+
+{\LARGE\bfseries Alexander Belik}\hfill{\small Dublin, Ireland}\\[-1pt]
+{\large\color{accent} Software Engineering \,|\, AI Systems \,|\, Scientific Computing}\hfill{\small +353 85 256 4027}\\[3pt]
+{\small
+\href{mailto:abelik1@outlook.com}{abelik1@outlook.com}
+\quad|\quad
+\href{https://www.linkedin.com/in/alexander-belik/}{linkedin.com/in/alexander-belik}
+\quad|\quad
+\href{https://github.com/ABelik1}{github.com/ABelik1}
+}
+\vspace{7pt}
+
+{\color{rule}\hrule height 0.8pt}
+\vspace{8pt}
+
+\begin{minipage}[t][0.835\textheight][t]{0.315\linewidth}
+\raggedright
+
+\sectiontitle{Profile}
+Theoretical Physics student and software builder focused on Python automation, AI systems, scientific ML, and practical full-stack tools.
+\vspace{4pt}
+
+I build software for messy real-world workflows: typed boundaries, reproducible data pipelines, inspectable automation, and interfaces people can actually use.
+
+\sectiontitle{Core Stack}
+{\small
+Python, TypeScript, React\par
+FastAPI, PyQt, SQLite\par
+NumPy, SciPy, PyTorch\par
+QuTiP, Optuna, Matplotlib\par
+Selenium, Docker, Git\par
+LaTeX, Markdown, Figma\par
+}
+
+\sectiontitle{Engineering Areas}
+{\small
+Backend APIs and services\par
+Data scraping and normalization\par
+Workflow automation\par
+Local LLM orchestration\par
+Tool routing and guarded actions\par
+Scientific simulation\par
+ML diagnostics and tuning\par
+}
+
+\sectiontitle{Education}
+\sideitem{B.A. Theoretical Physics}{Trinity College Dublin, expected 2026}
+{\small Focus: computational physics, quantum mechanics, statistical mechanics, and QFT.}\par\vspace{5pt}
+\sideitem{Leaving Certificate}{The Dublin Academy of Education, 2020--2022}
+
+\sectiontitle{Research Base}
+{\small
+Numerical simulation\par
+Data analysis\par
+Reservoir computing\par
+Quantum dynamics\par
+Experiment-control tooling\par
+Technical writing\par
+}
+
+\vfill
+\sectiontitle{Languages}
+{\small English -- fluent\par Russian -- intermediate\par Spanish -- basic}
+
+\end{minipage}
+\hfill
+\begin{minipage}[t][0.835\textheight][t]{0.645\linewidth}
+\raggedright
+
+\sectiontitle{Experience}
+
+\role{Software Engineer, EdTech}{2024--2025}{Grinds360}
+\begin{itemize}
+  \item Built Python automation tools for video, content, and interactive lesson workflows.
+  \item Contributed to full-stack product features and UX iteration with Figma-backed collaboration.
+  \item Translated ambiguous product requirements into maintainable tools with non-technical stakeholders.
+\end{itemize}
+\vspace{2pt}
+
+\role{Research Assistant, CRANN Institute}{Jun--Sep 2025}{Trinity College Dublin}
+\begin{itemize}
+  \item Built a PyTorch Echo State Network toolkit for quantum time-series prediction.
+  \item Added configurable reservoirs, mixed precision, ridge-regression solvers, Optuna tuning, logging, and diagnostics.
+  \item Validated predictions against Heisenberg spin-chain simulation data and conservation-law checks.
+\end{itemize}
+\vspace{2pt}
+
+\role{Experimental / Computational Research Assistant}{May--Sep 2024}{Trinity College Dublin}
+\begin{itemize}
+  \item Created Python control and data-acquisition tooling for spectroscopy experiments on ferrofluids and liquid crystals.
+  \item Improved repeatability through structured logging and automated measurement workflows.
+\end{itemize}
+\vspace{2pt}
+
+\role{Teaching Assistant}{Oct 2025--Present}{Trinity College Dublin}
+\begin{itemize}
+  \item Lead weekly tutorials, support problem solving, and grade assignments with clear feedback.
+\end{itemize}
+
+\sectiontitle{Selected Projects}
+
+\project{ORION / Big Brother Assistant}{Python, PyQt, Ollama, SQLite, Whisper}{Windows-first local assistant with wake-word gating, LLM-first capability selection, memory, guarded tools, daemon/direct/offline modes, and PyQt overlay/dashboard surfaces.}
+
+\project{Choose Car}{React, TypeScript, FastAPI, SQLite, Selenium}{Ireland-focused keep-vs-switch car optimizer with backend services, admin review tools, OEM and used-inventory scraping, robots-aware indexed discovery, and normalization pipelines.}
+
+\project{EchoState and Heisenberg Chain}{PyTorch, NumPy, SciPy, QuTiP, Optuna}{Reusable ESN library plus quantum spin-chain simulator for learning physical dynamics from observables, with solver comparisons and stability diagnostics.}
+
+\project{DFT Hamilton / PySCF Environment}{Docker, Python, PySCF, LibXC}{Reproducible computational chemistry workflow for H2 RHF/DFT, open-shell Li UHF, molecular examples, spin-correlation tests, endpoint sensitivity checks, and custom functional comparisons.}
+
+\vfill
+\sectiontitle{Software Strengths}
+{\small
+\textbf{Practical architecture:} separates orchestration, persistence, UI, and side effects into testable boundaries.\\[2pt]
+\textbf{Data-heavy workflows:} comfortable with scraping, raw/normalized databases, review surfaces, and repeatable imports.\\[2pt]
+\textbf{Scientific reliability:} uses diagnostics, conservation checks, reproducible environments, and structured logs to make model behavior inspectable.
+}
+
+\end{minipage}
+
+\end{document}
