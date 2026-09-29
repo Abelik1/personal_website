@@ -19,12 +19,12 @@ test("background simulation and branching timeline remain responsive", async ({ 
   await expect.poll(frame).not.toBe(still);
   for (const width of [320, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    await expect(page.locator(".timeline-card")).toHaveCount(6);
+    await expect(page.locator(".timeline-card")).toHaveCount(8);
     await expect.poll(() => page.locator(".timeline-card").evaluateAll(cards => {
       const boxes = cards.map(card => card.getBoundingClientRect());
       return boxes.every((a, i) => a.left >= 0 && a.right <= innerWidth && boxes.slice(i + 1).every(b => a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top));
     })).toBe(true);
-    await expect(page.locator(".tl-core .tl-branch")).toHaveCount(6);
+    await expect(page.locator(".tl-core .tl-branch")).toHaveCount(8);
     const strands = await page.locator(".tl-core .tl-strand").count();
     expect(strands).toBe(await page.locator(".timeline-stage").evaluate(el => el.clientWidth < 760 ? 9 : 15));
     await expect(page.locator(".tl-halo .tl-strand")).toHaveCount(strands);
@@ -89,6 +89,31 @@ test("hovering a project card agitates the background particles", async ({ page,
   await page.waitForTimeout(400);
   expect(await frame()).not.toBe(before);
   await expect(card.locator(".project-peek")).toBeVisible();
+});
+
+test("Inhabis card opens the landing page, skills keep their own colours, timeline lists new work", async ({ page }) => {
+  await page.goto("/");
+  const inhabis = page.locator(".project-card").first();
+  await expect(inhabis.getByRole("heading", { name: "Inhabis" })).toBeVisible();
+  await expect(inhabis).toHaveAttribute("href", "https://inhabis.ie");
+  await expect(inhabis).toHaveAttribute("target", "_blank");
+  const distinct = await page.locator(".skill-pill").evaluateAll((els) => new Set(els.map((el) => (el as HTMLElement).style.getPropertyValue("--skill"))).size);
+  expect(distinct).toBeGreaterThan(30);
+  await expect(page.locator(".timeline-card h3", { hasText: "Co-founder and Engineer" })).toHaveCount(1);
+  await expect(page.locator(".timeline-card h3", { hasText: "HPC Demonstration Developer" })).toHaveCount(1);
+  const covers = await page.locator(".project-cover img, .project-cover video").count();
+  expect(covers).toBeGreaterThanOrEqual(9);
+});
+
+test("hovering a video card plays its clip", async ({ page, isMobile }) => {
+  test.skip(isMobile, "hover only exists with a pointer");
+  await page.goto("/");
+  const card = page.locator(".project-card").filter({ has: page.getByRole("heading", { name: "EuroHPC Demo Lab" }) });
+  await card.scrollIntoViewIfNeeded();
+  await card.hover();
+  await expect.poll(() => card.locator("video").evaluate((v: HTMLVideoElement) => !v.paused)).toBe(true);
+  await page.mouse.move(2, 2);
+  await expect.poll(() => card.locator("video").evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
 });
 
 test("thesis links survive refresh, navigation and browser history", async ({ page }) => {

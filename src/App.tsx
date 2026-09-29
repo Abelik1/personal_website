@@ -4,34 +4,22 @@ import {
   Search,
   X,
   Atom,
-  BarChart3,
-  Bot,
-  BrainCircuit,
-  Cpu,
-  Database,
   Download,
   FileText,
-  FlaskConical,
-  Gauge,
   Github,
   Images,
   Linkedin,
   Mail,
   MapPin,
-  Mic,
   Orbit,
-  Repeat2,
   Route,
-  Server,
-  Sigma,
   Terminal,
-  Waves,
   Workflow
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { FluidField } from "./FluidField";
 import { agitateField, calmField } from "./fieldBus";
+import { fallbackVisual, skillVisuals } from "./skillBrands";
 import { ExperienceTimeline } from "./ExperienceTimeline";
 import { ProjectArtwork } from "./ProjectArtwork";
 import {
@@ -65,57 +53,6 @@ const thesisNavItems = [
   { label: "Technical", href: "#thesis-technical" },
   { label: "Contact", href: "#thesis-contact" }
 ];
-
-const projectIcons: Record<Project["accent"], LucideIcon> = {
-  cyan: Waves,
-  green: Cpu,
-  amber: BrainCircuit
-};
-
-type SkillLogo =
-  | { kind: "brand"; slug: string; label?: string }
-  | { kind: "icon"; Icon: LucideIcon };
-
-
-const skillLogos: Record<string, SkillLogo> = {
-  Python: { kind: "brand", slug: "python" },
-  NumPy: { kind: "brand", slug: "numpy" },
-  PyTorch: { kind: "brand", slug: "pytorch" },
-  Mathematica: { kind: "brand", slug: "wolframmathematica", label: "Wolfram Mathematica" },
-  "C/C++ simulations": { kind: "brand", slug: "cplusplus", label: "C++" },
-  Matplotlib: { kind: "icon", Icon: BarChart3 },
-  React: { kind: "brand", slug: "react" },
-  TypeScript: { kind: "brand", slug: "typescript" },
-  FastAPI: { kind: "brand", slug: "fastapi" },
-  SQLite: { kind: "brand", slug: "sqlite" },
-  "UX collaboration": { kind: "brand", slug: "figma", label: "Figma" },
-  Figma: { kind: "brand", slug: "figma" },
-  "Local LLM workflows": { kind: "icon", Icon: Bot },
-  "Agent orchestration": { kind: "icon", Icon: Workflow },
-  "Memory systems": { kind: "icon", Icon: Database },
-  "Tool routing": { kind: "icon", Icon: Route },
-  Automation: { kind: "icon", Icon: Cpu },
-  LaTeX: { kind: "brand", slug: "latex" },
-  "Quantum mechanics": { kind: "icon", Icon: Atom },
-  "Statistical mechanics": { kind: "icon", Icon: FlaskConical },
-  QFT: { kind: "icon", Icon: Atom },
-  "Data analysis": { kind: "icon", Icon: BarChart3 },
-  Reproducibility: { kind: "icon", Icon: Repeat2 },
-  "Git / GitHub": { kind: "brand", slug: "github" },
-  "CUDA / CuPy": { kind: "brand", slug: "nvidia", label: "NVIDIA CUDA" },
-  SLURM: { kind: "icon", Icon: Server },
-  "Parallel pipelines": { kind: "icon", Icon: Workflow },
-  Benchmarking: { kind: "icon", Icon: Gauge },
-  Linux: { kind: "brand", slug: "linux" },
-  "Numerical solvers": { kind: "icon", Icon: Sigma },
-  "Tailwind CSS": { kind: "brand", slug: "tailwindcss" },
-  PostgreSQL: { kind: "brand", slug: "postgresql" },
-  Docker: { kind: "brand", slug: "docker" },
-  "GitHub Actions": { kind: "brand", slug: "githubactions" },
-  "Data pipelines": { kind: "icon", Icon: Database },
-  "Node.js": { kind: "brand", slug: "nodedotjs", label: "Node.js" },
-  "Speech to text": { kind: "icon", Icon: Mic }
-};
 
 function LinkButton({
   href,
@@ -260,17 +197,61 @@ function ProjectMediaItem({ item }: { item: ProjectMedia }) {
   );
 }
 
-const accentHue: Record<Project["accent"], number> = { cyan: 172, green: 140, amber: 42 };
-
 // Remembered so Back from a project page returns to the same place in the grid.
 const navigation = { portfolioScroll: 0, cameFromPortfolio: false };
 // Filters survive a trip to a project page and back.
 const workFilters = { category: "All work", query: "" };
 
+const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// A project's own image or clip. Clips play while `playing` is true and step through the playlist.
+function ProjectCover({ project, playing }: { project: Project; playing: boolean }) {
+  const { cover } = project;
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [clip, setClip] = useState(0);
+  const clips = cover?.kind === "video" ? [{ src: cover.src, poster: cover.poster ?? "" }, ...(cover.playlist ?? [])] : [];
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (playing && !prefersReducedMotion()) void video.play().catch(() => undefined);
+    else video.pause();
+  }, [playing, clip]);
+
+  if (!cover) return <ProjectArtwork visual={project.visual} hue={project.hue} />;
+  if (cover.kind === "image") {
+    return <img src={cover.src} alt={cover.alt} loading="lazy" decoding="async" style={{ objectPosition: cover.position }} />;
+  }
+  const current = clips[clip % clips.length];
+  return (
+    <video
+      ref={videoRef}
+      key={current.src}
+      src={current.src}
+      poster={current.poster}
+      aria-label={cover.alt}
+      muted
+      playsInline
+      preload={clip === 0 ? "metadata" : "auto"}
+      loop={clips.length === 1}
+      onEnded={() => setClip((value) => (value + 1) % clips.length)}
+      style={{ objectPosition: cover.position }}
+    />
+  );
+}
+
 function ProjectCard({ project }: { project: Project }) {
-  const Icon = projectIcons[project.accent];
   const ref = useRef<HTMLAnchorElement>(null);
-  const hue = accentHue[project.accent];
+  const [active, setActive] = useState(false);
+  const external = Boolean(project.href);
+  const engage = (element: HTMLElement) => {
+    setActive(true);
+    agitateField(element, project.hue);
+  };
+  const release = (element: HTMLElement) => {
+    setActive(false);
+    calmField(element);
+  };
 
   useEffect(() => {
     const el = ref.current;
@@ -282,60 +263,68 @@ function ProjectCard({ project }: { project: Project }) {
   return (
     <a
       ref={ref}
-      href={`#project/${project.slug}`}
-      className={`project-card accent-${project.accent}`}
+      href={project.href ?? `#project/${project.slug}`}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noreferrer" : undefined}
+      className="project-card"
+      style={{ "--h": project.hue } as CSSProperties}
       onPointerEnter={(event) => {
-        if (event.pointerType !== "touch") agitateField(event.currentTarget, hue);
+        if (event.pointerType !== "touch") engage(event.currentTarget);
       }}
-      onPointerLeave={(event) => calmField(event.currentTarget)}
-      onFocus={(event) => agitateField(event.currentTarget, hue)}
-      onBlur={(event) => calmField(event.currentTarget)}
+      onPointerLeave={(event) => release(event.currentTarget)}
+      onPointerMove={(event) => {
+        const box = event.currentTarget.getBoundingClientRect();
+        event.currentTarget.style.setProperty("--mx", `${event.clientX - box.left}px`);
+        event.currentTarget.style.setProperty("--my", `${event.clientY - box.top}px`);
+      }}
+      onFocus={(event) => engage(event.currentTarget)}
+      onBlur={(event) => release(event.currentTarget)}
       onClick={() => {
+        if (external) return;
         navigation.portfolioScroll = window.scrollY;
         navigation.cameFromPortfolio = true;
       }}
     >
       <div className="project-face">
-        <ProjectArtwork visual={project.visual} />
-        <div className="project-card__top">
-          <div>
-            <div className="project-eyebrow-row">
-              <p className="eyebrow">{project.eyebrow}</p>
-              {project.status && (
-                <span className="status-pill">
-                  <span className="status-dot" aria-hidden="true" />
-                  {project.status}
-                </span>
-              )}
-            </div>
+        <div className="project-cover">
+          <ProjectCover project={project} playing={active} />
+          <span className="project-cover__shade" aria-hidden="true" />
+          {project.status && (
+            <span className="status-pill">
+              <span className="status-dot" aria-hidden="true" />
+              {project.status}
+            </span>
+          )}
+          {external && (
+            <span className="project-badge">
+              {new URL(project.href!).hostname}
+              <ArrowUpRight size={13} aria-hidden="true" />
+            </span>
+          )}
+          <div className="project-cover__caption">
+            <p className="eyebrow">{project.eyebrow}</p>
             <h3>{project.title}</h3>
           </div>
-          <span className="project-icon" aria-hidden="true">
-            <Icon size={22} />
+        </div>
+        <div className="project-body">
+          <p className="project-summary">{project.short}</p>
+          <div className="stack-list compact" aria-label={`${project.title} stack preview`}>
+            {project.stack.slice(0, 4).map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+          <span className="expand-cue">
+            {external ? `Visit ${new URL(project.href!).hostname}` : "Open project page"}
+            <ArrowUpRight size={16} aria-hidden="true" />
           </span>
         </div>
-        <p className="project-summary">{project.short}</p>
-        <div className="stack-list compact" aria-label={`${project.title} stack preview`}>
-          {project.stack.slice(0, 3).map((item) => (
-            <span key={item}>{item}</span>
-          ))}
-        </div>
-        <span className="expand-cue">
-          Open project page
-          <ArrowUpRight size={16} aria-hidden="true" />
-        </span>
       </div>
       <div className="project-peek" aria-hidden="true">
-        <p className="project-peek__summary">{project.summary}</p>
         <ul>
-          {project.built.slice(0, 3).map((item) => (
+          {project.peek.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
-        <span className="project-peek__cue">
-          Click for images and the full write-up
-          <ArrowUpRight size={14} />
-        </span>
       </div>
     </a>
   );
@@ -408,7 +397,7 @@ function ProjectPage({ project }: { project: Project | undefined }) {
 
   return (
     <>
-      <section className={`project-hero accent-${project.accent}`}>
+      <section className="project-hero" style={{ "--h": project.hue } as CSSProperties}>
         <div className="project-hero__copy">
           <a className="back-link" href="#work" onClick={goBack}>
             <ArrowLeft size={16} aria-hidden="true" />
@@ -435,19 +424,19 @@ function ProjectPage({ project }: { project: Project | undefined }) {
           {project.link && (
             <div className="hero-actions">
               <LinkButton href={project.link.href}>
-                <Github size={17} />
+                {project.link.href.includes("github.com") ? <Github size={17} /> : <ArrowUpRight size={17} />}
                 {project.link.label}
               </LinkButton>
             </div>
           )}
         </div>
         <div className="project-hero__art">
-          <ProjectArtwork visual={project.visual} />
+          <ProjectCover project={project} playing />
         </div>
       </section>
 
       {stats && stats.length > 0 && (
-        <section className="project-stats" aria-label={`${project.title} key facts`}>
+        <section className="project-stats" style={{ "--h": project.hue } as CSSProperties} aria-label={`${project.title} key facts`}>
           {stats.map((stat) => (
             <div key={stat.label}>
               <strong>{stat.value}</strong>
@@ -539,13 +528,16 @@ function ResearchFeature({ onOpenThesis }: { onOpenThesis: () => void }) {
 }
 
 function SkillPill({ skill }: { skill: string }) {
-  const logo = skillLogos[skill];
-
+  const visual = skillVisuals[skill] ?? fallbackVisual;
   return (
-    <span className="skill-pill">
-      {logo?.kind === "brand" && <Terminal size={15} aria-hidden="true" />}
-      {logo?.kind === "icon" && <logo.Icon size={15} aria-hidden="true" />}
-      {!logo && <Cpu size={15} aria-hidden="true" />}
+    <span className="skill-pill" style={{ "--skill": visual.color } as CSSProperties}>
+      <span className="skill-mark" aria-hidden="true">
+        {visual.kind === "brand" ? (
+          <svg viewBox="0 0 24 24"><path d={visual.path} fill="currentColor" /></svg>
+        ) : (
+          <visual.Icon size={17} />
+        )}
+      </span>
       <span>{skill}</span>
     </span>
   );

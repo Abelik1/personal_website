@@ -16,7 +16,7 @@ styles = {
     'subtitle': ParagraphStyle('subtitle', fontName='Helvetica', fontSize=11, leading=15, textColor=accent, spaceAfter=10),
     'body': ParagraphStyle('body', fontName='Helvetica', fontSize=9, leading=13, textColor=ink, spaceAfter=5),
     'small': ParagraphStyle('small', fontName='Helvetica', fontSize=8, leading=11, textColor=muted, spaceAfter=5),
-    'heading': ParagraphStyle('heading', fontName='Helvetica-Bold', fontSize=9, leading=13, textColor=accent, spaceBefore=14, spaceAfter=8),
+    'heading': ParagraphStyle('heading', fontName='Helvetica-Bold', fontSize=9, leading=13, textColor=accent, spaceBefore=10, spaceAfter=6),
     'role': ParagraphStyle('role', fontName='Helvetica-Bold', fontSize=10, leading=13, textColor=ink, spaceAfter=3),
     'date': ParagraphStyle('date', fontName='Helvetica', fontSize=8, leading=12, textColor=muted, alignment=TA_RIGHT),
     'bullet': ParagraphStyle('bullet', fontName='Helvetica', fontSize=8.5, leading=12, textColor=ink, leftIndent=9, firstLineIndent=-9, spaceAfter=3)
@@ -54,19 +54,22 @@ for kind in ['software', 'physics']:
     for item in sorted(data['experiences'], key=lambda x:x['start'], reverse=True):
         role = Table([[p(item['role'], 'role'), p(item['period'], 'date')]], colWidths=[370, 141])
         role.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'), ('LEFTPADDING',(0,0),(-1,-1),0), ('RIGHTPADDING',(0,0),(-1,-1),0), ('BOTTOMPADDING',(0,0),(-1,-1),0), ('TOPPADDING',(0,0),(-1,-1),0)]))
-        story.append(KeepTogether([role, p(item['place'], 'small')] + [p('- ' + text, 'bullet') for text in item['details']] + [Spacer(1,8)]))
-    story += [PageBreak(), p('Selected work', 'title'), p(title, 'subtitle')]
-    selected = ['home', 'workspace', 'lab', 'hpc', 'assistant'] if kind == 'software' else ['thesis', 'quantum', 'hpc', 'spectroscopy', 'chemistry']
+        story.append(KeepTogether([role, p(item['place'], 'small')] + [p('- ' + text, 'bullet') for text in item['details'][:2]] + [Spacer(1,4)]))
+    story += [heading('Selected work')]
+    selected = ['home', 'hpc', 'workspace', 'lab'] if kind == 'software' else ['thesis', 'quantum', 'hpc', 'spectroscopy']
     for visual in selected:
         project = next(x for x in data['projects'] if x['visual'] == visual)
         block = [heading(project['eyebrow']), p(project['title'] + (' (in progress)' if project.get('status') else ''), 'role'), p(project['short'])]
-        block += [p('- ' + text, 'bullet') for text in project['built'][:2]]
+        block += [p('- ' + text, 'bullet') for text in project['built'][:1]]
         block += [p('Tools: ' + ', '.join(project['stack']), 'small')]
         if project.get('link'):
             href = project['link']['href']
             if href.startswith('https:'):
                 block += [Paragraph(f'<link href="{escape(href)}" color="#32674e">{clean(project["link"]["label"])}</link>', styles['small'])]
         story.append(KeepTogether(block))
+    story += [heading('Toolkit')]
+    for cluster in data['skillClusters']:
+        story.append(Paragraph('<b>' + clean(cluster['title']) + ':</b> ' + clean(', '.join(cluster['skills'])), styles['small']))
     file = out / f'alexander-belik-{kind}-cv.pdf'
     doc = SimpleDocTemplate(str(file), pagesize=A4, rightMargin=42, leftMargin=42, topMargin=38, bottomMargin=48, title=f'Alexander Belik | {kind.title()} CV', author='Alexander Belik')
     doc.build(story, onFirstPage=footer, onLaterPages=footer)

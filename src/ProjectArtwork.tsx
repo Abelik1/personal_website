@@ -10,9 +10,9 @@ const captions: Record<Project["visual"], string> = {
 };
 
 /** Concept illustrations, not product screenshots or measured data. */
-export function ProjectArtwork({ visual }: { visual: Project["visual"] }) {
+export function ProjectArtwork({ visual, hue }: { visual: Project["visual"]; hue?: number }) {
   const id = useId().replace(/:/g, "");
-  const accent = ["quantum", "chemistry", "thesis"].includes(visual) ? "#c1b3ee" : ["spectroscopy", "car"].includes(visual) ? "#e8c393" : "#a8dfc4";
+  const accent = hue !== undefined ? `hsl(${hue} 78% 72%)` : ["quantum", "chemistry", "thesis"].includes(visual) ? "#c1b3ee" : ["spectroscopy", "car"].includes(visual) ? "#e8c393" : "#a8dfc4";
   return <div className={`project-artwork artwork-${visual}`}>
     <svg viewBox="0 0 640 360" role="img" aria-label={`${captions[visual]}. Concept illustration.`}>
       <defs>

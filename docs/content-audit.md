@@ -36,7 +36,8 @@ No new claims of deployment, usage, numerical accuracy, or completed work were a
 - Kept historical CV/application drafts and original research PDFs intact. Historical drafts are explicitly distinguished from served documents.
 - Added thesis URLs and browser-history support, local project illustrations, the restored animated branching experience timeline with automatic card spacing, search, category filtering, and an empty-state reset.
 - Restored the original full-page, pointer-responsive vector simulation, with tab-visibility handling and live reduced-motion support.
-- Removed third-party skill-logo requests. The site uses bundled Lucide icons and system fonts.
+- Removed third-party skill-logo requests. Skill logos come from the bundled Simple Icons package and Lucide, so no logo service is contacted at runtime.
+- 29 September 2026: cards now use each project's own imagery (screenshots, a DFT chart drawn from `results/endpoint_spin_correlation_comparison.csv`, and clips), a per-project hue, and hover facts. The Inhabis card links to inhabis.ie. The Inhabis and EuroHPC Demo Lab entries were added to the experience timeline and the skills grid was expanded. Both CVs were regenerated and remain two pages.
 
 ## Maintenance checklist
 

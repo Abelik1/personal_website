@@ -1,6 +1,6 @@
 # Alexander Belik's personal website
 
-A responsive portfolio for theoretical physics, scientific computing, and software projects. Built with React 19, TypeScript, Vite 6, plain CSS, and Lucide icons. The site is static and needs no backend, account, API key, or database.
+A responsive portfolio for theoretical physics, scientific computing, and software projects. Built with React 19, TypeScript, Vite 6, plain CSS, Lucide icons, and bundled Simple Icons paths for skill logos. The site is static and needs no backend, account, API key, or database.
 
 ## Run locally
 
@@ -27,7 +27,8 @@ Publish the contents of `dist/` to a static host. The current asset URLs assume 
 | --- | --- |
 | `src/content.ts` | Profile, education, experience, projects, categories, research text, and document URLs |
 | `src/App.tsx` | Portfolio, project and thesis views, project search/filtering, hover-reveal cards, project pages, navigation |
-| `src/ProjectArtwork.tsx` | Ten original SVG concept illustrations for the project previews |
+| `src/ProjectArtwork.tsx` | Ten original SVG concept illustrations, used as a card cover only when a project has no image or clip of its own |
+| `src/skillBrands.ts` | Maps each skill to its brand logo and colour (Simple Icons, imported locally) or a coloured Lucide icon |
 | `src/FluidField.tsx` | Full-page interactive vector-field simulation with pointer-driven particle swirls and card-hover agitation |
 | `src/fieldBus.ts` | Tiny shared state that lets a hovered project card tell the particle field where to get restless |
 | `src/ExperienceTimeline.tsx` | Animated branching experience timeline with measured card spacing |
@@ -45,7 +46,7 @@ Update profile facts and project descriptions in `src/content.ts`. A project has
 
 The work section searches titles, subjects, descriptions, and tools. Filters and search combine. Hovering a card lifts it, reveals the summary and first three build points beneath it, and makes the background particles around it vibrate in the project's accent colour. Clicking opens the project page. Touch devices skip the hover reveal and open the page on tap. Reduced-motion users get no lift and no particle agitation. The grid uses two columns on desktop and one below 540px, and the search and category filter are kept when returning from a project page.
 
-Project previews are labelled **concept studies**. They illustrate documented systems and ideas; they are not application screenshots, experimental results, or performance measurements. To introduce real screenshots, add reviewed assets under `public/`, include useful alt text, and update `ProjectArtwork` while retaining a stable aspect ratio. The thesis explainer uses the actual presentation images.
+Each card takes its cover from the project itself: a screenshot, a chart drawn from the repository's own data, or a clip that plays on hover. `presentation` in `src/content.ts` sets each project's hue (which colours the card, its glow, and the particles around it), its cover, three hover facts, and an optional `href`. A card with an `href` opens that address in a new tab (Inhabis goes to inhabis.ie). Only the Ferronematic card falls back to the SVG concept illustrations, which are labelled concept studies and not measured data. Convert GIFs to H264 MP4 before adding them, and keep images under about 250 KB.
 
 The original vector simulation runs behind the whole site. Cursor movement bends particle paths into swirls. Drawing pauses while the tab is hidden, responds to live reduced-motion changes with a static field, and limits pixel density to 2x. The experience timeline retains coloured strands, animated branches, and endpoint markers. It measures card heights to prevent overlaps and moves the spine to the left on narrow screens. Timeline animation pauses outside the viewport. No remote fonts or logo services are required.
 

@@ -25,8 +25,26 @@ export type ProjectDetail = {
   sections: ProjectSection[];
 };
 
+export type ProjectCover = {
+  kind: "image" | "video";
+  src: string;
+  poster?: string;
+  // Extra clips a video cover plays through in turn while hovered.
+  playlist?: { src: string; poster: string }[];
+  alt: string;
+  // CSS object-position for the crop inside the card.
+  position?: string;
+};
+
 export type Project = {
   slug: string;
+  // Drives the card's colour, its glow, and the tint of the background particles around it.
+  hue: number;
+  cover?: ProjectCover;
+  // Three short, concrete facts shown in the hover panel.
+  peek: string[];
+  // Cards with an href open that address in a new tab instead of the project page.
+  href?: string;
   title: string;
   category: "Software & AI" | "Scientific computing" | "Research";
   eyebrow: string;
@@ -58,7 +76,9 @@ export type Project = {
   };
 };
 
-type ProjectInput = Omit<Project, "slug"> & { slug?: string };
+type ProjectInput = Omit<Project, "slug" | "hue" | "cover" | "peek" | "href">;
+
+type ProjectPresentation = Pick<Project, "hue" | "cover" | "peek" | "href">;
 
 const slugify = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -147,7 +167,7 @@ const projectInputs: ProjectInput[] = [
     eyebrow: "Home platform",
     status: "In progress",
     short:
-      "A local-first operating layer for a connected home: one trusted model of the house, explicit policy, and evidence that an action actually worked.",
+      "One system for the whole house: solar, heating, the car and every device, working inside rules the household sets.",
     summary:
       "Inhabis builds a trusted model of a home, translates different device ecosystems into a consistent internal language, evaluates goals and actions against explicit policy, and records what actually happened. It is local-first, policy-first, and fail-closed: stale evidence, missing authority, or an ambiguous action is rejected with a recorded reason.",
     problem:
@@ -166,6 +186,10 @@ const projectInputs: ProjectInput[] = [
     accent: "cyan",
     category: "Software & AI",
     visual: "home",
+    link: {
+      label: "Visit inhabis.ie",
+      href: "https://inhabis.ie"
+    },
     detail: {
       lead: [
         "Inhabis treats a house as one system. It keeps a current, explainable picture of rooms, devices, sensors, and availability, says so when information is missing or stale, and only acts inside the authority the household has granted.",
@@ -184,7 +208,8 @@ const projectInputs: ProjectInput[] = [
             "Goals like use spare solar power, keep the house comfortable, or have the car ready this evening are household outcomes. Achieving them takes observation, coordination, trade-offs, and follow-up across several ecosystems."
           ],
           media: [
-            { kind: "image", src: "/media/inhabis/problem.webp", caption: "One home, many moving targets: solar production, dynamic tariffs, storage, export, and flexible loads all compete for the same energy." }
+            { kind: "image", src: "/media/inhabis/demo-energy.webp", caption: "Illustration from the Inhabis site: solar, the car, storage and the grid all draw on the same energy." },
+            { kind: "image", src: "/media/inhabis/demo-heat.webp", caption: "Illustration from the Inhabis site: heat moving through a home, the kind of behaviour the thermal predictor learns." }
           ]
         },
         {
@@ -206,10 +231,8 @@ const projectInputs: ProjectInput[] = [
             "The customer interface has four places: Home, Rooms, Intelligence, and History, around a shared furnished 3D house. Workbench is the advanced workspace for the world model and simulator."
           ],
           media: [
-            { kind: "image", src: "/media/inhabis/home-desktop.webp", caption: "My Home in the Grove appearance: a summary of the house, the weather, and the current comfort and energy view." },
-            { kind: "image", src: "/media/inhabis/recurring-permission.webp", caption: "Recurring permissions: the household approves a temperature range for a time window, and the approval expires." },
             { kind: "image", src: "/media/inhabis/energy-day.webp", caption: "A simulated day of household energy: solar, baseline load, heat pump, EV charging, battery, and grid import and export." },
-            { kind: "image", src: "/media/inhabis/home-mobile.webp", caption: "The same home at phone width." }
+            { kind: "image", src: "/media/inhabis/home-mobile.webp", caption: "The Pilot Home dashboard at phone width." }
           ]
         },
         {
@@ -240,7 +263,8 @@ const projectInputs: ProjectInput[] = [
             "The natural-language goal intake is a review-only prototype: it can produce suggestions and cannot dispatch an action from a vague request. Locks, alarms, and garage doors are out of scope for now."
           ],
           media: [
-            { kind: "image", src: "/media/inhabis/concept-cutaway.webp", caption: "Concept artwork of the product direction, an illustration and not a product screenshot." }
+            { kind: "image", src: "/media/inhabis/insight-solar.webp", caption: "Illustration from the Inhabis site: sizing solar and battery for a home." },
+            { kind: "image", src: "/media/inhabis/insight-thermal.webp", caption: "Illustration from the Inhabis site: thermal inertia in a wall and floor." }
           ]
         }
       ]
@@ -251,9 +275,9 @@ const projectInputs: ProjectInput[] = [
     eyebrow: "Local AI assistant",
     status: "In progress",
     short:
-      "Windows-first local assistant with wake-word gating, local LLM orchestration, memory, guarded tools, and a PyQt overlay/dashboard.",
+      "A voice assistant for my Windows PC that runs its language models locally and answers to a wake word.",
     summary:
-      "A Windows-first voice and text assistant built around wake-word gating, local model routing, guarded tool execution, memory, and a PyQt overlay plus dashboard.",
+      "ORION is a voice and text assistant for Windows. A wake word starts it, a language model running on the machine chooses what to do with each request, and anything that touches the system or its memory waits for approval. A PyQt overlay and dashboard sit on top.",
     problem:
       "Desktop assistants often become brittle command routers. ORION treats requests as an orchestration problem: decide, retrieve context, call tools safely, and report through one runtime envelope.",
     built: [
@@ -287,9 +311,9 @@ const projectInputs: ProjectInput[] = [
     eyebrow: "Desktop workspace",
     status: "In progress",
     short:
-      "Local-first Windows workspace for projects, tasks, reminders, transcription, and an assistant, with React rendering inside a Qt shell.",
+      "A desktop app for my projects, tasks, reminders and transcribed recordings, with a local assistant built in.",
     summary:
-      "A personal Windows desktop workspace that holds conversations, projects, tasks, reminders, and an AI assistant in one local application. React renders inside PySide6 and Qt WebEngine, and the packaged build ships a bundled dashboard.",
+      "Orion Mini keeps my conversations, projects, tasks, reminders and an AI assistant in one desktop app. The interface is React running inside a PySide6 and Qt WebEngine shell, and the packaged build ships its own dashboard.",
     problem:
       "Personal tooling scatters across a browser, a notes app, and a terminal. Pulling it back into one local application only works if the app is precise about where data goes and what it is allowed to do.",
     built: [
@@ -301,6 +325,14 @@ const projectInputs: ProjectInput[] = [
     stack: ["Python", "PySide6 / Qt", "React", "TypeScript", "CUDA", "Whisper"],
     impact:
       "One local surface for the working day, where transcription, reminders, and assistance all run against real project state.",
+    mediaLabel: "Screens from the app",
+    media: [
+      { kind: "image", src: "/media/orion-mini/cover.webp", caption: "Today view: the next commitments, reminders and a quiet summary of the day." },
+      { kind: "image", src: "/media/orion-mini/popup.webp", caption: "An escalated reminder that stays on screen until the break has actually happened." },
+      { kind: "image", src: "/media/orion-mini/reminders.webp", caption: "Reminder rings counting down to the next commitment." },
+      { kind: "image", src: "/media/orion-mini/project-switcher.webp", caption: "Switching between projects, each with its own conversations and files." },
+      { kind: "image", src: "/media/orion-mini/library.webp", caption: "The transcription library with per-track progress." }
+    ],
     accent: "green",
     category: "Software & AI",
     visual: "workspace"
@@ -309,7 +341,7 @@ const projectInputs: ProjectInput[] = [
     title: "EuroHPC Demo Lab",
     eyebrow: "HPC and GPU simulation",
     short:
-      "Fourteen GPU physics and AI demonstrations for the EuroHPC Demo Lab 2026, rendered on Leonardo and Discoverer and replayed on a public stand.",
+      "Fourteen physics and AI demos I rendered on Leonardo and Discoverer for the EuroHPC Demo Lab, played back on a public stand.",
     summary:
       "A gallery of visual high-performance computing demonstrations for public engagement. Each demo separates headless computation from presentation: the solver writes numbered frames and metadata, and a lightweight web viewer handles playback, controls, readouts, and saved runs. Large showcase renders are made ahead of time on Brain++ Discoverer GB200 nodes, on Leonardo A100 nodes, and on a CUDA desktop, and the stand replays them when nobody is at the controls.",
     problem:
@@ -417,7 +449,7 @@ const projectInputs: ProjectInput[] = [
     title: "LabFlow",
     eyebrow: "Research data platform",
     short:
-      "Digital lab notebook for a materials research institute that stores measurements as structured relational records.",
+      "A lab notebook for a materials research institute where every measurement is a structured, searchable record.",
     summary:
       "A digital lab notebook and experimental data management platform for a materials research institute. It is sample-centred in the interface and project-organised for researchers, storing measurements as structured relational records so provenance stays machine-readable, searchable, and auditable.",
     problem:
@@ -467,9 +499,9 @@ const projectInputs: ProjectInput[] = [
     title: "CarCove",
     eyebrow: "Product and data system",
     short:
-      "Ireland-focused car keep-vs-switch optimizer with FastAPI, React, SQLite, scraping, normalization, and admin review tools.",
+      "Helps Irish car owners decide whether to keep their car or switch, using listings scraped from the market.",
     summary:
-      "An Ireland-focused keep-vs-switch car optimizer with FastAPI services, React/TypeScript UI, SQLite storage, scraping pipelines, normalization review, and admin browsers.",
+      "CarCove compares what it costs to keep a car with what it costs to switch, using Irish market data. Scrapers collect listings and manufacturer catalogues, admin screens let me review and clean the data, and a React front end shows the comparison.",
     problem:
       "Car decisions are messy because market data, OEM catalogues, used inventory, finance, and running costs live in different shapes.",
     built: [
@@ -481,6 +513,14 @@ const projectInputs: ProjectInput[] = [
     stack: ["React", "TypeScript", "FastAPI", "SQLite", "Selenium", "Python"],
     impact:
       "Turns fragmented car-market information into inspectable, normalized decision data for real purchase tradeoffs.",
+    mediaLabel: "Screens from the app",
+    media: [
+      { kind: "image", src: "/media/carcove/sell.webp", caption: "Seller flow: account, car details and a clear listing fee." },
+      { kind: "image", src: "/media/carcove/ev.webp", caption: "EV advice built around charging reality." },
+      { kind: "image", src: "/media/carcove/garage.webp", caption: "Garage: saved cars, ownership baselines and a shareable code." },
+      { kind: "image", src: "/media/carcove/tools.webp", caption: "Registration lookup turned into an ownership report." },
+      { kind: "image", src: "/media/carcove/market.webp", caption: "Market browser with grouped listings and filters." }
+    ],
     accent: "green",
     category: "Software & AI",
     visual: "car"
@@ -489,9 +529,9 @@ const projectInputs: ProjectInput[] = [
     title: "EchoState and Heisenberg Chain",
     eyebrow: "Physics-informed ML",
     short:
-      "PyTorch Echo State Network toolkit plus a Heisenberg spin-chain simulator for learning quantum time dynamics.",
+      "A neural network that learns how a quantum spin chain evolves in time, built on echo state networks in PyTorch.",
     summary:
-      "A PyTorch Echo State Network toolkit paired with a quantum spin-chain simulator for learning Heisenberg dynamics from generated observables.",
+      "A PyTorch library for echo state networks, plus a simulator that generates Heisenberg spin-chain data for it to learn from. The network sees observables from the chain and predicts how they evolve.",
     problem:
       "Quantum time evolution is expensive to simulate directly, while sequence models need strong diagnostics before their predictions are physically trustworthy.",
     built: [
@@ -523,9 +563,9 @@ const projectInputs: ProjectInput[] = [
     title: "Locally Thermal from Global Athermality",
     eyebrow: "Capstone thesis",
     short:
-      "Quantum thermodynamics project on globally correlated states whose local subsystems are exactly thermal, with an SDP toolkit behind it.",
+      "My capstone on quantum states that look thermal from every local view while their correlations still hold non-equilibrium structure.",
     summary:
-      "A research project on bipartite quantum states whose local marginals are thermal, so all deviation from global equilibrium must be stored in correlations, supported by a semidefinite-programming toolkit that tests convertibility numerically.",
+      "If both halves of a quantum system look exactly thermal on their own, any distance from global equilibrium has to sit in the correlations between them. The thesis maps that set of states and uses semidefinite programs to test which states can be turned into which.",
     problem:
       "If local athermality is removed exactly, the remaining thermodynamic resource becomes a geometric and operational question about correlations.",
     built: [
@@ -572,9 +612,9 @@ const projectInputs: ProjectInput[] = [
     title: "Ferronematic Liquid-Crystal Research",
     eyebrow: "Published experimental research",
     short:
-      "Python experiment control, spectroscopy data analysis, and ferronematic liquid-crystal research contributing to an RSC publication.",
+      "Instrument control and data analysis for ferronematic liquid-crystal experiments, work that fed into a published paper.",
     summary:
-      "Experimental and computational work on ferronematic liquid crystals, combining Python automation, spectroscopy data acquisition, analysis, and research outputs that contributed to co-authored publication work.",
+      "Summer research on ferronematic liquid crystals. I wrote the Python that runs the spectrometer, stepped the sample through temperatures and voltages, and analysed the spectra, which contributed to a co-authored paper.",
     problem:
       "Ferronematic liquid-crystal experiments require reproducible control, structured spectroscopy measurements, and careful analysis across changing material compositions and experimental conditions.",
     built: [
@@ -598,9 +638,9 @@ const projectInputs: ProjectInput[] = [
     title: "DFT Hamilton",
     eyebrow: "Computational chemistry",
     short:
-      "Containerised PySCF environment for density-functional and Hartree-Fock experiments, with functional and spin-correlation comparisons.",
+      "A Docker setup for running PySCF density-functional and Hartree-Fock calculations on a machine the standard build does not support.",
     summary:
-      "A Docker-based PySCF workflow that makes density-functional and Hartree-Fock experiments reproducible on a platform the reference stack does not build on, together with scripted molecular examples and analysis outputs.",
+      "The reference chemistry stack has no native build on my machine, so I containerised PySCF. One command builds it, scripted molecules write result tables, and a custom spin-correlation functional is checked against LibXC.",
     problem:
       "A computational chemistry result is only as trustworthy as the environment that produced it, and the reference stack has no native build on the machine where the work actually happens.",
     built: [
@@ -612,18 +652,154 @@ const projectInputs: ProjectInput[] = [
     stack: ["Python", "PySCF", "LibXC", "Docker", "NumPy"],
     impact:
       "A repeatable environment where a functional idea can be tested against reference results.",
+    mediaLabel: "From the results folder",
+    media: [
+      { kind: "image", src: "/media/dft/gap-comparison.webp", caption: "HOMO-LUMO gaps of five small systems under LDA, PBE and the custom functional, drawn from the repository's own results CSV." }
+    ],
     accent: "green",
     category: "Scientific computing",
     visual: "chemistry"
   }
 ];
 
-export const projects: Project[] = projectInputs.map((project) => ({
-  ...project,
-  slug: project.slug ?? slugify(project.title)
-}));
+const galaxyClip = { src: "/media/hpc-demos/galaxy_collision_3d.mp4", poster: "/media/hpc-demos/galaxy_collision_3d.jpg" };
+
+// Everything the cards need for colour and imagery. Covers are taken from the projects themselves.
+const presentation: Record<string, ProjectPresentation> = {
+  inhabis: {
+    hue: 26,
+    href: "https://inhabis.ie",
+    cover: { kind: "image", src: "/media/inhabis/estate.webp", alt: "A two-storey house at sunset with its rooms lit and solar panels on the roof", position: "50% 62%" },
+    peek: [
+      "Matter and Thread devices onboard from an Android phone",
+      "A fictional house runs the real physics and planning, so you can try it",
+      "Every action is checked against policy, then verified"
+    ]
+  },
+  orion: {
+    hue: 205,
+    cover: { kind: "image", src: "/media/orion/sky-cover.webp", alt: "ORION's interface: a constellation map over the Earth at sunrise with a small robot", position: "50% 40%" },
+    peek: [
+      "Wakes on a spoken word, then a language model picks the capability that handles the request",
+      "System actions and memory changes wait for approval",
+      "Runs offline, as a daemon, with a GUI, or text-only"
+    ]
+  },
+  "orion-mini": {
+    hue: 152,
+    cover: { kind: "image", src: "/media/orion-mini/cover.webp", alt: "Orion Mini's Today view with a glowing orb, reminders and next steps", position: "50% 0%" },
+    peek: [
+      "Transcription library with checkpoints, corrections and timestamped exports",
+      "Reminders that notice when you are idle and escalate",
+      "The assistant runs on local Ollama, provider APIs or existing CLI logins"
+    ]
+  },
+  "eurohpc-demo-lab": {
+    hue: 268,
+    cover: {
+      kind: "video",
+      ...galaxyClip,
+      playlist: [
+        { src: "/media/hpc-demos/fluid.mp4", poster: "/media/hpc-demos/fluid.jpg" },
+        { src: "/media/hpc-demos/black_hole.mp4", poster: "/media/hpc-demos/black_hole.jpg" },
+        { src: "/media/hpc-demos/plasma_guardian.mp4", poster: "/media/hpc-demos/plasma_guardian.jpg" },
+        { src: "/media/hpc-demos/neuro_racers.mp4", poster: "/media/hpc-demos/neuro_racers.jpg" }
+      ],
+      alt: "A simulated collision of the Milky Way and Andromeda galaxies"
+    },
+    peek: [
+      "A 2,000,000-particle galaxy collision rendered on a GB200",
+      "MUrB N-body reaches 93.8% parallel efficiency on four A100s",
+      "Neuro-Racers and Bat vs Moth evolve in front of visitors"
+    ]
+  },
+  labflow: {
+    hue: 186,
+    cover: { kind: "image", src: "/media/labflow/home-dashboard.webp", alt: "LabFlow's home dashboard listing projects, samples and recent measurements", position: "50% 0%" },
+    peek: [
+      "FastAPI and PostgreSQL backend with versioned migrations",
+      "Instrument capture turns large measurement files into named records",
+      "Role-based access across organisations and sites"
+    ]
+  },
+  carcove: {
+    hue: 48,
+    cover: { kind: "image", src: "/media/carcove/sell.webp", alt: "CarCove's seller page for listing a car", position: "50% 30%" },
+    peek: [
+      "Scrapers for Toyota, Hyundai and Volkswagen Ireland data",
+      "Admin tools to review and normalise the catalogue",
+      "SQLite-backed FastAPI services with a React front end"
+    ]
+  },
+  "echostate-and-heisenberg-chain": {
+    hue: 326,
+    cover: { kind: "image", src: "/media/echostate/heisenberg-overlay.webp", alt: "Predicted and exact Heisenberg spin-chain dynamics overlaid", position: "50% 50%" },
+    peek: [
+      "Nine ridge-regression solvers plus streaming covariance",
+      "Optuna tuning and structured experiment logs",
+      "The spin-chain simulator is checked against conservation laws"
+    ]
+  },
+  "locally-thermal-from-global-athermality": {
+    hue: 246,
+    cover: { kind: "image", src: "/media/thesis/lt-geometry.webp", alt: "The geometry of the locally thermal set from the capstone thesis", position: "50% 50%" },
+    peek: [
+      "Derived a nine-parameter two-qubit normal form",
+      "Convertibility between states is tested with semidefinite programs",
+      "Free-energy monotonicity becomes mutual-information monotonicity"
+    ]
+  },
+  "ferronematic-liquid-crystal-research": {
+    hue: 8,
+    peek: [
+      "Python drives the spectrometer through its Windows acquisition software",
+      "Sequential imaging under stepped temperature and voltage",
+      "Contributed to a co-authored RSC publication"
+    ]
+  },
+  "dft-hamilton": {
+    hue: 96,
+    cover: { kind: "image", src: "/media/dft/gap-comparison.webp", alt: "Bar chart of HOMO-LUMO gaps for five small systems under LDA, PBE and the custom functional", position: "50% 50%" },
+    peek: [
+      "One command builds the Docker environment and checks basis loading, RHF, DFT and UHF",
+      "A spin-correlation functional is compared against LibXC references",
+      "Ionisation-energy checks show where the custom functional breaks down"
+    ]
+  }
+};
+
+export const projects: Project[] = projectInputs.map((project) => {
+  const slug = slugify(project.title);
+  const extra = presentation[slug];
+  if (!extra) throw new Error(`Missing card presentation for ${project.title}`);
+  return { ...project, ...extra, slug };
+});
 
 export const experiences: Experience[] = [
+  {
+    period: "Aug 2026 - Present",
+    start: "2026-08",
+    end: "2026-09",
+    role: "Co-founder and Engineer",
+    place: "Inhabis",
+    details: [
+      "Building a local-first operating layer for connected homes: an embedded Matter controller with one persistent fabric per home, and an Android companion for BLE and Thread onboarding.",
+      "Working on the planning and safety layers that check every action against household policy and verify the result, and on solar-surplus EV charging, solar forecasting and a learned room thermal predictor.",
+      "Building the Pilot Home simulator and customer dashboard so a first household can try the system before it touches real devices."
+    ]
+  },
+  {
+    period: "Aug 2026 - Sep 2026",
+    start: "2026-08",
+    end: "2026-09",
+    role: "HPC Demonstration Developer",
+    place: "EuroHPC Demo Lab 2026",
+    details: [
+      "Built fourteen GPU physics and AI demos and a walk-up viewer, rendered on Leonardo A100 nodes and Brain++ Discoverer GB200 nodes and replayed on a public stand.",
+      "Wrote the SLURM job templates and run bundles that move saved runs between the clusters and a stand laptop.",
+      "Added a front end for the team's MUrB N-body code, which reached 93.8% parallel efficiency on four A100s at 500,000 bodies."
+    ]
+  },
   {
     period: "May 2026 - Sep 2026",
     start: "2026-05",
@@ -693,15 +869,19 @@ export const experiences: Experience[] = [
 export const skillClusters: SkillCluster[] = [
   {
     title: "Scientific computing",
-    skills: ["Python", "NumPy", "PyTorch", "Mathematica", "C/C++ simulations", "Matplotlib"]
+    skills: ["Python", "NumPy", "PyTorch", "Mathematica", "C / C++", "Matplotlib", "PySCF", "Optuna"]
   },
   {
     title: "HPC and GPU",
-    skills: ["CUDA / CuPy", "SLURM", "Parallel pipelines", "Benchmarking", "Linux", "Numerical solvers"]
+    skills: ["CUDA / CuPy", "SLURM", "CMake", "Linux", "Benchmarking", "Parallel pipelines", "N-body and lattice-Boltzmann solvers"]
   },
   {
     title: "Web and product",
-    skills: ["React", "TypeScript", "Node.js", "FastAPI", "Tailwind CSS", "UX collaboration", "Figma"]
+    skills: ["React", "TypeScript", "JavaScript", "Node.js", "Vite", "Tailwind CSS", "FastAPI", "three.js", "Playwright", "Figma", "Vercel"]
+  },
+  {
+    title: "Home and mobile",
+    skills: ["Matter", "Thread networking", "BLE commissioning", "Kotlin", "Android", "Jetpack Compose", "Home energy and thermal models"]
   },
   {
     title: "Data and infrastructure",
@@ -709,18 +889,11 @@ export const skillClusters: SkillCluster[] = [
   },
   {
     title: "AI systems",
-    skills: [
-      "Local LLM workflows",
-      "Agent orchestration",
-      "Memory systems",
-      "Tool routing",
-      "Speech to text",
-      "Automation"
-    ]
+    skills: ["Ollama", "LangGraph", "Local LLM workflows", "Agent orchestration", "Tool routing", "Speech to text"]
   },
   {
     title: "Research practice",
-    skills: ["LaTeX", "Quantum mechanics", "Statistical mechanics", "QFT", "Data analysis", "Reproducibility"]
+    skills: ["LaTeX", "Quantum mechanics", "Statistical mechanics", "QFT", "Semidefinite programming", "Data analysis", "Reproducibility"]
   }
 ];
 
@@ -1168,6 +1341,6 @@ export const portfolioCopy = {
   kicker: "Theoretical physicist & software developer",
   currentTitle: "M.Sc. High-Performance Computing",
   currentDetail: "Trinity College Dublin. Working across parallel computing, scientific software, and local AI systems.",
-  workTitle: "Ideas, made tangible.",
-  workIntro: "A collection of research, scientific software, and tools for everyday problems. Explore a project for the problem, the engineering, and what came out of it."
+  workTitle: "Recent projects.",
+  workIntro: "Home automation, supercomputer demos, research code and a few tools I wanted for myself. Hover a card for the short version, click for the full page."
 };
