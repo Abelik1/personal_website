@@ -33,7 +33,8 @@ export function FluidField() {
     const context = canvas.getContext("2d", { alpha: true });
     if (!context) return;
 
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let reducedMotion = motionPreference.matches;
     const pointer = {
       x: window.innerWidth * 0.5,
       y: window.innerHeight * 0.45,
@@ -44,6 +45,7 @@ export function FluidField() {
     let width = 0;
     let height = 0;
     let animationFrame = 0;
+    let lastFrame = 0;
 
     const resetParticle = (particle: Particle, scatter = true) => {
       particle.x = scatter ? Math.random() * width : pointer.x;
@@ -59,7 +61,7 @@ export function FluidField() {
     const resize = () => {
       const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
       width = window.innerWidth;
-      height = Math.max(window.innerHeight, 720);
+      height = window.innerHeight;
       canvas.width = Math.floor(width * pixelRatio);
       canvas.height = Math.floor(height * pixelRatio);
       canvas.style.width = `${width}px`;
@@ -76,7 +78,9 @@ export function FluidField() {
         return particle;
       });
 
+      context.globalCompositeOperation = "source-over";
       context.clearRect(0, 0, width, height);
+      if (reducedMotion) drawStaticField();
     };
 
     const onPointerMove = (event: PointerEvent) => {
@@ -87,8 +91,9 @@ export function FluidField() {
     };
 
     const drawStaticField = () => {
+      context.globalCompositeOperation = "source-over";
       context.clearRect(0, 0, width, height);
-      context.fillStyle = "rgba(6, 9, 11, 1)";
+      context.fillStyle = "rgba(16, 20, 19, 1)";
       context.fillRect(0, 0, width, height);
       context.lineWidth = 1;
       for (let y = 70; y < height; y += 38) {
@@ -104,13 +109,20 @@ export function FluidField() {
     };
 
     const draw = (time: number) => {
+      if (document.hidden) return;
+      // Cap drawing near 60 fps so high-refresh displays keep the original speed.
+      if (time - lastFrame < 15) {
+        animationFrame = requestAnimationFrame(draw);
+        return;
+      }
+      lastFrame = time;
       if (reducedMotion) {
         drawStaticField();
         return;
       }
 
       context.globalCompositeOperation = "source-over";
-      context.fillStyle = "rgba(6, 9, 11, 0.09)";
+      context.fillStyle = "rgba(16, 20, 19, 0.09)";
       context.fillRect(0, 0, width, height);
       context.globalCompositeOperation = "lighter";
       context.lineWidth = 1.18;
@@ -149,10 +161,11 @@ export function FluidField() {
           const dy = particle.y - pointer.y;
           const distanceSq = dx * dx + dy * dy;
           if (distanceSq < 62000 && distanceSq > 8) {
-            const force = (1 - distanceSq / 62000) * 0.58;
+            const force = (1 - distanceSq / 62000) * 0.5;
             const invDistance = 1 / Math.sqrt(distanceSq);
-            particle.vx += (-dy * invDistance + dx * invDistance * 0.12) * force;
-            particle.vy += (dx * invDistance + dy * invDistance * 0.12) * force;
+            // Circulation with a slight inward pull, so the pointer stirs the haze and never empties it.
+            particle.vx += (-dy * invDistance - dx * invDistance * 0.08) * force;
+            particle.vy += (dx * invDistance - dy * invDistance * 0.08) * force;
             particle.hue = 47 + Math.random() * 26;
           }
         }
@@ -185,13 +198,27 @@ export function FluidField() {
       animationFrame = requestAnimationFrame(draw);
     };
 
+    const syncAnimation = () => {
+      cancelAnimationFrame(animationFrame);
+      reducedMotion = motionPreference.matches;
+      lastFrame = 0;
+      pointer.active = false;
+      if (document.hidden) return;
+      if (reducedMotion) drawStaticField();
+      else animationFrame = requestAnimationFrame(draw);
+    };
+
     resize();
+    motionPreference.addEventListener("change", syncAnimation);
+    document.addEventListener("visibilitychange", syncAnimation);
     window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
     animationFrame = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(animationFrame);
+      motionPreference.removeEventListener("change", syncAnimation);
+      document.removeEventListener("visibilitychange", syncAnimation);
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointerMove);
     };

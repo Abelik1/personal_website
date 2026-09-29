@@ -1,5 +1,7 @@
 import {
   ArrowUpRight,
+  Search,
+  X,
   Atom,
   BarChart3,
   Bot,
@@ -10,31 +12,40 @@ import {
   Download,
   FileText,
   FlaskConical,
+  Gauge,
   Github,
   Images,
   Linkedin,
   Mail,
   MapPin,
+  Mic,
   Orbit,
   Repeat2,
   Route,
+  Server,
+  Sigma,
   Terminal,
   Waves,
   Workflow
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FluidField } from "./FluidField";
+import { ExperienceTimeline } from "./ExperienceTimeline";
+import { ProjectArtwork } from "./ProjectArtwork";
 import {
   education,
-  experiences,
+  portfolioCopy,
+  projectCategories,
   profile,
   projects,
   skillClusters,
   thesisStorySections,
   thesisTechnicalItems,
   workstreams,
-  type Project
+  heroDemos,
+  type Project,
+  type ProjectMedia
 } from "./content";
 
 type View = "portfolio" | "thesis";
@@ -49,7 +60,7 @@ const thesisNavItems = [
   { label: "Overview", href: "#thesis-overview" },
   { label: "Explainer", href: "#thesis-explainer" },
   { label: "Technical", href: "#thesis-technical" },
-  { label: "Contact", href: "#contact" }
+  { label: "Contact", href: "#thesis-contact" }
 ];
 
 const projectIcons: Record<Project["accent"], LucideIcon> = {
@@ -62,7 +73,6 @@ type SkillLogo =
   | { kind: "brand"; slug: string; label?: string }
   | { kind: "icon"; Icon: LucideIcon };
 
-const brandLogoUrl = (slug: string) => `https://cdn.simpleicons.org/${slug}`;
 
 const skillLogos: Record<string, SkillLogo> = {
   Python: { kind: "brand", slug: "python" },
@@ -70,7 +80,7 @@ const skillLogos: Record<string, SkillLogo> = {
   PyTorch: { kind: "brand", slug: "pytorch" },
   Mathematica: { kind: "brand", slug: "wolframmathematica", label: "Wolfram Mathematica" },
   "C/C++ simulations": { kind: "brand", slug: "cplusplus", label: "C++" },
-  Matplotlib: { kind: "brand", slug: "matplotlib" },
+  Matplotlib: { kind: "icon", Icon: BarChart3 },
   React: { kind: "brand", slug: "react" },
   TypeScript: { kind: "brand", slug: "typescript" },
   FastAPI: { kind: "brand", slug: "fastapi" },
@@ -88,88 +98,21 @@ const skillLogos: Record<string, SkillLogo> = {
   QFT: { kind: "icon", Icon: Atom },
   "Data analysis": { kind: "icon", Icon: BarChart3 },
   Reproducibility: { kind: "icon", Icon: Repeat2 },
-  "Git / GitHub": { kind: "brand", slug: "github" }
+  "Git / GitHub": { kind: "brand", slug: "github" },
+  "CUDA / CuPy": { kind: "brand", slug: "nvidia", label: "NVIDIA CUDA" },
+  SLURM: { kind: "icon", Icon: Server },
+  "Parallel pipelines": { kind: "icon", Icon: Workflow },
+  Benchmarking: { kind: "icon", Icon: Gauge },
+  Linux: { kind: "brand", slug: "linux" },
+  "Numerical solvers": { kind: "icon", Icon: Sigma },
+  "Tailwind CSS": { kind: "brand", slug: "tailwindcss" },
+  PostgreSQL: { kind: "brand", slug: "postgresql" },
+  Docker: { kind: "brand", slug: "docker" },
+  "GitHub Actions": { kind: "brand", slug: "githubactions" },
+  "Data pipelines": { kind: "icon", Icon: Database },
+  "Node.js": { kind: "brand", slug: "nodedotjs", label: "Node.js" },
+  "Speech to text": { kind: "icon", Icon: Mic }
 };
-
-const timeline = {
-  startMonth: 2021 * 12 + 6,
-  endMonth: 2026 * 12 + 6,
-  width: 1680,
-  pad: 96,
-  baseY: 410
-};
-
-const verticalTimeline = {
-  width: 1180,
-  height: 1460,
-  padY: 110,
-  centerX: 590,
-  leftCardX: 54,
-  rightCardX: 760,
-  cardWidth: 360
-};
-
-const laneY = {
-  "top-high": 244,
-  "top-low": 306,
-  "bottom-low": 514,
-  "bottom-high": 574
-};
-
-const cardLaneY = {
-  "top-high": 18,
-  "top-low": 92,
-  "bottom-low": 610,
-  "bottom-high": 610
-};
-
-const timelineThreadColors = ["#ffb35c", "#d8ff6f", "#ff6f9f", "#c58cff", "#ffdf6e"];
-const timelineFutureThreadColors = ["#efcb95", "#d5f2a8", "#f1a9c1", "#cdb2f4", "#f1dfa3"];
-const timelineExperienceThreadIndices = [4, 10, 7, 12, 2];
-const timelineBundleThreads = [
-  { y: -28, color: "#d7fff8", alpha: 0.28 },
-  { y: -24, color: "#c9f7f0", alpha: 0.24 },
-  { y: -20, color: "#b9eee9", alpha: 0.3 },
-  { y: -16, color: "#e6fff9", alpha: 0.34 },
-  { y: -12, color: "#c4f4ec", alpha: 0.32 },
-  { y: -8, color: "#b6ebe4", alpha: 0.27 },
-  { y: -4, color: "#defcf7", alpha: 0.33 },
-  { y: 0, color: "#c8f8f0", alpha: 0.3 },
-  { y: 4, color: "#eafefa", alpha: 0.25 },
-  { y: 8, color: "#bdeee8", alpha: 0.31 },
-  { y: 12, color: "#d8fff8", alpha: 0.28 },
-  { y: 16, color: "#c2f5ee", alpha: 0.26 },
-  { y: 20, color: "#e1fff9", alpha: 0.29 },
-  { y: 24, color: "#b8ebe5", alpha: 0.23 },
-  { y: 28, color: "#d0faf3", alpha: 0.25 }
-];
-const yearTicks = [2021, 2022, 2023, 2024, 2025, 2026];
-
-function toMonth(value: string) {
-  const [year, month] = value.split("-").map(Number);
-  return year * 12 + month - 1;
-}
-
-function xForDate(value: string) {
-  const month = toMonth(value);
-  const span = timeline.endMonth - timeline.startMonth;
-  const usableWidth = timeline.width - timeline.pad * 2;
-  return timeline.pad + ((month - timeline.startMonth) / span) * usableWidth;
-}
-
-function xForYear(year: number) {
-  const month = year * 12;
-  const span = timeline.endMonth - timeline.startMonth;
-  const usableWidth = timeline.width - timeline.pad * 2;
-  return timeline.pad + ((month - timeline.startMonth) / span) * usableWidth;
-}
-
-function yForDate(value: string) {
-  const month = toMonth(value);
-  const span = timeline.endMonth - timeline.startMonth;
-  const usableHeight = verticalTimeline.height - verticalTimeline.padY * 2;
-  return verticalTimeline.padY + ((month - timeline.startMonth) / span) * usableHeight;
-}
 
 function LinkButton({
   href,
@@ -231,109 +174,100 @@ function EquationBlock() {
   return (
     <div className="equation-block" aria-label="Thesis core equations">
       <div className="equation-line">
-        <span>ρ</span>
-        <sub>AB</sub>
-        <span> = γ ⊗ γ + C</span>
+        <span>ρ<sub>AB</sub> = γ ⊗ γ + C</span>
       </div>
       <div className="equation-line secondary">
-        <span>Tr</span>
-        <sub>A</sub>
-        <span>C = Tr</span>
-        <sub>B</sub>
-        <span>C = 0</span>
+        <span>Tr<sub>A</sub> C = Tr<sub>B</sub> C = 0</span>
       </div>
       <div className="equation-caption">local marginals fixed, correlations left free</div>
     </div>
   );
 }
 
-function ProjectVisual({ project }: { project: Project }) {
+function HeroDemoDome() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [index, setIndex] = useState(0);
+  const [still, setStill] = useState(false);
+  const demo = heroDemos[index];
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setStill(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || still) return;
+    void video.play().catch(() => undefined);
+  }, [index, still]);
+
   return (
-    <div className={`project-visual visual-${project.visual}`} aria-hidden="true">
-      <div className="visual-gridline" />
-      {project.visual === "assistant" && (
-        <>
-          <span className="visual-chip chip-one">wake</span>
-          <span className="visual-chip chip-two">tools</span>
-          <span className="visual-orbit" />
-          <span className="visual-core" />
-        </>
-      )}
-      {project.visual === "car" && (
-        <>
-          <span className="road-line" />
-          <span className="car-body" />
-          <span className="car-window" />
-          <span className="car-wheel wheel-one" />
-          <span className="car-wheel wheel-two" />
-        </>
-      )}
-      {project.visual === "quantum" && (
-        <>
-          <span className="wave-line line-one" />
-          <span className="wave-line line-two" />
-          <span className="spin-dot dot-one" />
-          <span className="spin-dot dot-two" />
-          <span className="spin-dot dot-three" />
-        </>
-      )}
-      {project.visual === "thesis" && (
-        <>
-          <span className="thermal-box box-one">gamma</span>
-          <span className="thermal-box box-two">rho</span>
-          <span className="thermal-link" />
-        </>
-      )}
-      {project.visual === "chemistry" && (
-        <>
-          <span className="molecule atom-one" />
-          <span className="molecule atom-two" />
-          <span className="molecule atom-three" />
-          <span className="bond bond-one" />
-          <span className="bond bond-two" />
-        </>
-      )}
-      {project.visual === "spectroscopy" && (
-        <>
-          <span className="spectrum bar-one" />
-          <span className="spectrum bar-two" />
-          <span className="spectrum bar-three" />
-          <span className="spectrum bar-four" />
-          <span className="scope-line" />
-        </>
-      )}
-    </div>
+    <a className="hero-art" href="#work" aria-label="Leonardo Visual Demos, jump to selected work">
+      <video
+        ref={videoRef}
+        key={demo.src}
+        src={still ? undefined : demo.src}
+        poster={demo.poster}
+        muted
+        playsInline
+        preload="auto"
+        onEnded={() => setIndex((current) => (current + 1) % heroDemos.length)}
+      />
+      <span className="field-label">
+        {String(index + 1).padStart(2, "0")} / {demo.name}
+      </span>
+      <span className="field-source">
+        Leonardo demos
+        <ArrowUpRight size={13} aria-hidden="true" />
+      </span>
+    </a>
   );
 }
 
-function arrangeProjectsForOpenRow(items: Project[], openTitle: string | null) {
-  if (!openTitle) return items;
+function ProjectMediaItem({ item }: { item: ProjectMedia }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const openIndex = items.findIndex((project) => project.title === openTitle);
-  if (openIndex < 0) return items;
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) void video.play().catch(() => undefined);
+        else video.pause();
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
 
-  const rowStart = Math.floor(openIndex / 3) * 3;
-  const rowEnd = rowStart + 3;
-  const openProject = items[openIndex];
-  const rowMates = items.slice(rowStart, rowEnd).filter((project) => project.title !== openTitle);
-
-  return [
-    ...items.slice(0, rowStart),
-    openProject,
-    ...rowMates,
-    ...items.slice(rowEnd)
-  ];
+  return (
+    <figure className="project-media">
+      {item.kind === "video" ? (
+        <video ref={videoRef} src={item.src} poster={item.poster} muted loop playsInline preload="none" />
+      ) : (
+        <img src={item.src} alt={item.caption} loading="lazy" decoding="async" />
+      )}
+      <figcaption>{item.caption}</figcaption>
+    </figure>
+  );
 }
 
 function ProjectCard({
   project,
   featured = false,
   isOpen = false,
+  side = "right",
   onToggle
 }: {
   project: Project;
   featured?: boolean;
   isOpen?: boolean;
+  side?: "left" | "right";
   onToggle: () => void;
 }) {
   const Icon = projectIcons[project.accent];
@@ -341,19 +275,28 @@ function ProjectCard({
   return (
     <details
       open={isOpen}
-      className={`project-card accent-${project.accent} ${featured ? "featured" : ""}`}
+      className={`project-card accent-${project.accent} opens-${side} ${featured ? "featured" : ""}`}
     >
       <summary
         className="project-summary-panel"
+        aria-label={`${isOpen ? "Close" : "Explore"} ${project.title}`}
         onClick={(event) => {
           event.preventDefault();
           onToggle();
         }}
       >
-        <ProjectVisual project={project} />
+        <ProjectArtwork visual={project.visual} />
         <div className="project-card__top">
           <div>
-            <p className="eyebrow">{project.eyebrow}</p>
+            <div className="project-eyebrow-row">
+              <p className="eyebrow">{project.eyebrow}</p>
+              {project.status && (
+                <span className="status-pill">
+                  <span className="status-dot" aria-hidden="true" />
+                  {project.status}
+                </span>
+              )}
+            </div>
             <h3>{project.title}</h3>
           </div>
           <span className="project-icon" aria-hidden="true">
@@ -371,7 +314,13 @@ function ProjectCard({
           <ChevronDown size={16} />
         </span>
       </summary>
-      <div className="project-expanded">
+      <div className="project-expanded" role="group" aria-label={`${project.title} details`}>
+        <div className="project-expanded-head">
+          <h4>{project.title}</h4>
+          <button type="button" className="project-close" onClick={onToggle} aria-label={`Close ${project.title} details`}>
+            <X size={16} aria-hidden="true" />
+          </button>
+        </div>
         <div className="project-expanded-intro">
           <strong>Overview</strong>
           <p className="project-expanded-summary">{project.summary}</p>
@@ -388,6 +337,16 @@ function ProjectCard({
             ))}
           </ul>
         </div>
+        {project.media && project.media.length > 0 && (
+          <div className="project-detail">
+            <strong>{project.mediaLabel ?? "From the repository"}</strong>
+            <div className="project-media-grid">
+              {project.media.map((item) => (
+                <ProjectMediaItem key={item.src} item={item} />
+              ))}
+            </div>
+          </div>
+        )}
         <div className="stack-list" aria-label={`${project.title} stack`}>
           {project.stack.map((item) => (
             <span key={item}>{item}</span>
@@ -396,7 +355,7 @@ function ProjectCard({
         <div className="project-footer">
           <p>{project.impact}</p>
           {project.link && (
-            <a href={project.link.href} className="text-link">
+            <a href={project.link.href} className="text-link" target="_blank" rel="noreferrer">
               {project.link.label}
               <ArrowUpRight size={16} aria-hidden="true" />
             </a>
@@ -438,204 +397,7 @@ function ResearchFeature({ onOpenThesis }: { onOpenThesis: () => void }) {
             Open thesis tab
           </ActionButton>
         </div>
-        <div className="lt-diagram" aria-label="Locally thermal state diagram">
-          <div className="node node-a">Local Gibbs state</div>
-          <div className="node node-b">Global state</div>
-          <div className="node node-c">Correlation resource</div>
-          <div className="beam beam-one" />
-          <div className="beam beam-two" />
-          <div className="beam beam-three" />
-          <div className="lt-equation" aria-label="Relative entropy equals mutual information on locally thermal states">
-            <span>D(ρ ∥ Γ) = I(A : A′)</span>
-            <small>on the locally thermal manifold</small>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ExperienceTimeline() {
-  const orderedExperiences = [...experiences].sort((a, b) => toMonth(a.start) - toMonth(b.start));
-
-  return (
-    <section className="section" id="experience">
-      <div className="section-heading">
-        <p className="eyebrow">Experience</p>
-        <h2>Research, teaching, product engineering, and lab automation.</h2>
-      </div>
-      <div className="timeline-help">
-        <span>Scroll through the timeline</span>
-        <span>Pastel threads inherit colour after each branch point</span>
-        <span>X marks the end of a branch</span>
-      </div>
-      <div className="timeline-scroll">
-        <div className="timeline-stage">
-          <div
-            className="timeline-spine"
-            aria-hidden="true"
-            style={{
-              top: verticalTimeline.padY,
-              height: verticalTimeline.height - verticalTimeline.padY * 2
-            }}
-          >
-            {timelineBundleThreads.map((thread, index) => (
-              <span
-                className="spine-strand"
-                key={`${thread.color}-${thread.y}-${index}`}
-                style={
-                  {
-                    "--strand-y": `${thread.y}px`,
-                    "--strand-color": thread.color,
-                    "--strand-alpha": thread.alpha,
-                    "--strand-delay": `${-index * 0.37}s`,
-                    "--strand-duration": `${4.2 + (index % 5) * 0.55}s`
-                  } as React.CSSProperties
-                }
-              />
-            ))}
-          </div>
-          <svg
-            className="timeline-svg"
-            viewBox={`0 0 ${verticalTimeline.width} ${verticalTimeline.height}`}
-            role="img"
-            aria-label="Vertical experience timeline from 2021 to 2026"
-          >
-            <defs>
-              <filter id="timelineGlow" x="-20%" y="-80%" width="140%" height="260%">
-                <feGaussianBlur stdDeviation="5" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-              <linearGradient id="mainThreadGradient" x1="0%" x2="100%" y1="0%" y2="0%">
-                <stop offset="0%" stopColor="#70e1d1" />
-                <stop offset="48%" stopColor="#c4f87b" />
-                <stop offset="100%" stopColor="#f2b866" />
-              </linearGradient>
-            </defs>
-
-            <path
-              className="timeline-main-thread halo"
-              d={`M ${verticalTimeline.centerX} ${verticalTimeline.padY} L ${verticalTimeline.centerX} ${verticalTimeline.height - verticalTimeline.padY}`}
-              stroke="rgba(112, 225, 209, 0.2)"
-            />
-            <path
-              className="timeline-main-thread"
-              d={`M ${verticalTimeline.centerX} ${verticalTimeline.padY} L ${verticalTimeline.centerX} ${verticalTimeline.height - verticalTimeline.padY}`}
-              stroke="rgba(213, 230, 223, 0.2)"
-            />
-
-            {orderedExperiences.map((item, index) => {
-              const startY = yForDate(item.start);
-              const threadIndex =
-                timelineExperienceThreadIndices[index] ?? index % timelineBundleThreads.length;
-              const offset = timelineBundleThreads[threadIndex].y;
-              const color = timelineFutureThreadColors[index % timelineFutureThreadColors.length];
-              const timelineEndY = verticalTimeline.height - verticalTimeline.padY;
-              return (
-                <path
-                  className={`timeline-future-thread thread-${threadIndex}`}
-                  key={`thread-${item.period}-${item.role}`}
-                  d={`M ${verticalTimeline.centerX + offset} ${startY} C ${verticalTimeline.centerX + offset - 3} ${startY + 140}, ${verticalTimeline.centerX + offset + 3} ${timelineEndY - 140}, ${verticalTimeline.centerX + offset} ${timelineEndY}`}
-                  stroke={color}
-                />
-              );
-            })}
-
-            {yearTicks.map((year) => {
-              const y = yForDate(`${year}-01`);
-              return (
-                <g key={year} className="timeline-tick">
-                  <line
-                    x1={verticalTimeline.centerX - 28}
-                    x2={verticalTimeline.centerX + 28}
-                    y1={y}
-                    y2={y}
-                  />
-                  <text x={verticalTimeline.centerX + 52} y={y + 5}>
-                    {year}
-                  </text>
-                </g>
-              );
-            })}
-
-            {orderedExperiences.map((item, index) => {
-              const startY = yForDate(item.start);
-              const endY = yForDate(item.end);
-              const threadIndex =
-                timelineExperienceThreadIndices[index] ?? index % timelineBundleThreads.length;
-              const offset = timelineBundleThreads[threadIndex].y;
-              const color = timelineThreadColors[index % timelineThreadColors.length];
-              const side = index % 2 === 0 ? "left" : "right";
-              const direction = side === "left" ? -1 : 1;
-              const endX =
-                side === "left" ? verticalTimeline.leftCardX + verticalTimeline.cardWidth : verticalTimeline.rightCardX;
-              const endMarkerY = endY;
-              const branchPath = `M ${verticalTimeline.centerX + offset} ${startY} C ${verticalTimeline.centerX + direction * 70} ${startY + 18}, ${endX - direction * 82} ${endMarkerY - 24}, ${endX} ${endMarkerY}`;
-              return (
-                <g
-                  className={`timeline-branch branch-${side}`}
-                  key={`${item.period}-${item.role}`}
-                >
-                  <path className="branch-energy branch-halo" d={branchPath} stroke={color} />
-                  <path className="branch-energy branch-core" d={branchPath} stroke={color} />
-                  <circle
-                    className="branch-start"
-                    cx={verticalTimeline.centerX + offset}
-                    cy={startY}
-                    r="5.5"
-                    stroke={color}
-                  />
-                  <line
-                    className="branch-end-x"
-                    x1={endX - 7}
-                    x2={endX + 7}
-                    y1={endMarkerY - 7}
-                    y2={endMarkerY + 7}
-                    stroke={color}
-                  />
-                  <line
-                    className="branch-end-x"
-                    x1={endX - 7}
-                    x2={endX + 7}
-                    y1={endMarkerY + 7}
-                    y2={endMarkerY - 7}
-                    stroke={color}
-                  />
-                </g>
-              );
-            })}
-          </svg>
-
-          {orderedExperiences.map((item, index) => {
-            const startY = yForDate(item.start);
-            const endY = yForDate(item.end);
-            const side = index % 2 === 0 ? "left" : "right";
-            const top = Math.max(28, Math.min(verticalTimeline.height - 220, (startY + endY) / 2 - 96));
-            return (
-              <article
-                className={`timeline-card side-${side}`}
-                key={`${item.period}-${item.role}`}
-                style={{
-                  left: side === "left" ? verticalTimeline.leftCardX : verticalTimeline.rightCardX,
-                  top,
-                  width: verticalTimeline.cardWidth
-                }}
-              >
-                <time>{item.period}</time>
-                <h3>{item.role}</h3>
-                <p className="muted">{item.place}</p>
-                <ul>
-                  {item.details.map((detail) => (
-                    <li key={detail}>{detail}</li>
-                  ))}
-                </ul>
-              </article>
-            );
-          })}
-        </div>
+        <div className="research-art"><ProjectArtwork visual="thesis" /></div>
       </div>
     </section>
   );
@@ -646,16 +408,7 @@ function SkillPill({ skill }: { skill: string }) {
 
   return (
     <span className="skill-pill">
-      {logo?.kind === "brand" && (
-        <img
-          src={brandLogoUrl(logo.slug)}
-          alt=""
-          aria-hidden="true"
-          onError={(event) => {
-            event.currentTarget.style.display = "none";
-          }}
-        />
-      )}
+      {logo?.kind === "brand" && <Terminal size={15} aria-hidden="true" />}
       {logo?.kind === "icon" && <logo.Icon size={15} aria-hidden="true" />}
       {!logo && <Cpu size={15} aria-hidden="true" />}
       <span>{skill}</span>
@@ -686,15 +439,15 @@ function SkillCluster() {
   );
 }
 
-function ContactSection() {
+function ContactSection({ thesis = false }: { thesis?: boolean }) {
   return (
-    <section className="section contact-section" id="contact">
+    <section className="section contact-section" id={thesis ? "thesis-contact" : "contact"}>
       <div>
         <p className="eyebrow">Contact</p>
         <h2>Open to research, software, and AI systems work.</h2>
         <p>
-          Based in Dublin, with a background in theoretical physics and practical experience across
-          research code, product systems, automation, and teaching.
+          Based in Dublin, with a theoretical physics degree and practical experience across research
+          platforms, GPU and HPC simulation, product systems, automation, and teaching.
         </p>
       </div>
       <div className="contact-actions">
@@ -745,19 +498,33 @@ function WorkstreamsSection() {
 
 function PortfolioPage({ onOpenThesis }: { onOpenThesis: () => void }) {
   const [openProjectTitle, setOpenProjectTitle] = useState<string | null>(null);
-  const displayedProjects = arrangeProjectsForOpenRow(projects, openProjectTitle);
+  const [category, setCategory] = useState("All work");
+  const [query, setQuery] = useState("");
+  const displayedProjects = projects.filter((project) =>
+    (category === "All work" || project.category === category) &&
+    [project.title, project.eyebrow, project.short, ...project.stack].join(" ").toLowerCase().includes(query.trim().toLowerCase())
+  );
   const featuredProjectTitles = new Set(projects.slice(0, 3).map((project) => project.title));
+
+  useEffect(() => {
+    if (!openProjectTitle) return;
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenProjectTitle(null);
+    };
+    document.addEventListener("keydown", close);
+    return () => document.removeEventListener("keydown", close);
+  }, [openProjectTitle]);
 
   return (
     <>
       <section className="hero">
-        <div className="hero-grid" aria-hidden="true" />
         <div className="hero-content">
           <p className="hero-location">
             <MapPin size={16} />
             {profile.location}
           </p>
-          <h1>{profile.name}</h1>
+          <p className="hero-kicker">{portfolioCopy.kicker}</p>
+          <h1>{profile.name.split(" ")[0]}<br /><span>{profile.name.split(" ").slice(1).join(" ")}<span className="name-period">.</span></span></h1>
           <p className="hero-title">{profile.title}</p>
           <p className="hero-intro">{profile.intro}</p>
           <div className="hero-actions" aria-label="Main actions">
@@ -798,30 +565,32 @@ function PortfolioPage({ onOpenThesis }: { onOpenThesis: () => void }) {
           </div>
         </div>
         <aside className="hero-panel" aria-label="Current profile">
-          <div>
-            <p className="eyebrow">Current focus</p>
-            <strong>Physics, software, and AI systems</strong>
-            <span>Research tools, machine-learning workflows, simulation, and full-stack products.</span>
-          </div>
-          <div className="signal-stack">
-            <span>Applied machine learning</span>
-            <span>Reservoir computing</span>
-            <span>Scientific simulation</span>
-          </div>
+          <HeroDemoDome />
+          <div className="current-focus"><p className="eyebrow">Currently</p><strong>{portfolioCopy.currentTitle}</strong><span>{portfolioCopy.currentDetail}</span></div>
         </aside>
       </section>
 
       <section className="section" id="work">
         <div className="section-heading">
-          <p className="eyebrow">Featured work</p>
-          <h2>Systems that move between theory, data, and useful interfaces.</h2>
+          <p className="eyebrow">Selected work / 2024–2026</p>
+          <h2>{portfolioCopy.workTitle}</h2>
+          <p className="section-intro">{portfolioCopy.workIntro}</p>
         </div>
+        <div className="work-toolbar">
+          <div className="project-filters" role="group" aria-label="Filter projects">
+            {projectCategories.map((item) => <button type="button" key={item} aria-pressed={category === item} onClick={() => { setCategory(item); setOpenProjectTitle(null); }}>{item}</button>)}
+          </div>
+          <div className="project-search"><Search size={17} aria-hidden="true" /><input type="search" aria-label="Search projects" placeholder="Search projects or tools" value={query} onChange={(event) => { setQuery(event.target.value); setOpenProjectTitle(null); }} />{query && <button type="button" aria-label="Clear search" onClick={() => setQuery("")}><X size={16} /></button>}</div>
+        </div>
+        <p className="work-count" role="status">{displayedProjects.length} {displayedProjects.length === 1 ? "project" : "projects"}</p>
+        {displayedProjects.length === 0 && <div className="empty-state"><h3>No matching projects.</h3><p>Try a different subject or tool, or browse the full collection.</p><button className="link-button ghost" type="button" onClick={() => { setQuery(""); setCategory("All work"); }}>Reset filters</button></div>}
         <div className="featured-grid work-grid">
-          {displayedProjects.map((project) => (
+          {displayedProjects.map((project, index) => (
             <ProjectCard
               key={project.title}
               project={project}
               featured={featuredProjectTitles.has(project.title)}
+              side={index % 2 === 0 ? "right" : "left"}
               isOpen={openProjectTitle === project.title}
               onToggle={() =>
                 setOpenProjectTitle((current) => (current === project.title ? null : project.title))
@@ -839,7 +608,7 @@ function PortfolioPage({ onOpenThesis }: { onOpenThesis: () => void }) {
       <section className="section education-section">
         <div className="section-heading">
           <p className="eyebrow">Education</p>
-          <h2>Formal grounding in theoretical physics.</h2>
+          <h2>From theoretical physics to high-performance computing.</h2>
         </div>
         <div className="education-grid">
           {education.map((item) => (
@@ -909,7 +678,7 @@ function ThesisPage() {
       <section className="section thesis-explainer-section" id="thesis-explainer">
         <div className="section-heading">
           <p className="eyebrow">Simple explanation</p>
-          <h2>The project, explained from the presentation story rather than slide-by-slide.</h2>
+          <h2>The research, one idea at a time.</h2>
         </div>
         <div className="thesis-story-list">
           {thesisStorySections.map((section, index) => (
@@ -970,24 +739,38 @@ function ThesisPage() {
         </div>
       </section>
 
-      <ContactSection />
+      <ContactSection thesis />
     </>
   );
 }
 
 export default function App() {
-  const [activeView, setActiveView] = useState<View>("portfolio");
+  const [activeView, setActiveView] = useState<View>(() => window.location.hash.startsWith("#thesis") ? "thesis" : "portfolio");
+  useEffect(() => {
+    const syncView = () => {
+      setActiveView(window.location.hash.startsWith("#thesis") ? "thesis" : "portfolio");
+    };
+    window.addEventListener("hashchange", syncView);
+    return () => window.removeEventListener("hashchange", syncView);
+  }, []);
+  useEffect(() => {
+    document.title = activeView === "thesis" ? "Quantum thermodynamics thesis | Alexander Belik" : "Alexander Belik | Theoretical Physics & Scientific Computing";
+    const target = document.getElementById(window.location.hash.slice(1));
+    if (target) target.scrollIntoView({ behavior: "instant" });
+  }, [activeView]);
   const navItems = activeView === "portfolio" ? portfolioNavItems : thesisNavItems;
   const openView = (view: View) => {
+    window.location.hash = view === "thesis" ? "thesis-overview" : "top";
     setActiveView(view);
-    window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   return (
     <div className="site-shell">
       <FluidField />
+      <a className="skip-link" href={activeView === "thesis" ? "#thesis-main-content" : "#main-content"}>Skip to content</a>
       <header className="site-header">
-        <button type="button" className="brand" onClick={() => openView("portfolio")}>
+        <button type="button" className="brand" aria-label="Alexander Belik, home" onClick={() => openView("portfolio")}>
           AB
         </button>
         <nav aria-label="Primary navigation">
@@ -1020,7 +803,7 @@ export default function App() {
         </nav>
       </header>
 
-      <main id="top">
+      <main id="top"><span id={activeView === "thesis" ? "thesis-main-content" : "main-content"} tabIndex={-1} />
         {activeView === "portfolio" ? (
           <PortfolioPage onOpenThesis={() => openView("thesis")} />
         ) : (

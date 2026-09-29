@@ -1,4 +1,6 @@
-# Choose Car
+# CarCove
+
+> Project reference snapshot, reviewed for portfolio alignment on 9 September 2026. Commands and paths below belong to the separate project repository. They do not run in this website. Upstream completeness and changes in private repositories have not been independently verified. See [the website README](README.md) and [content audit](docs/content-audit.md).
 
 Local Ireland-focused car keep-vs-switch optimizer with:
 - `backend/` FastAPI + SQLite services and jobs
@@ -454,7 +456,7 @@ The current normalized databases are:
 - `sqlite/oem_used_inventory_normalized.sqlite3` for approved-used outputs
 - `sqlite/choose_car_normalized.sqlite3` for general used-market outputs
 
-The detailed normalization philosophy and field-handling rules live in [backend/scripts/NORMALIZATION.md](backend/scripts/NORMALIZATION.md).
+The detailed normalization philosophy and field-handling rules live in `backend/scripts/NORMALIZATION.md` (in the upstream project).
 
 Set `PYTHONPATH` first from the repo root:
 

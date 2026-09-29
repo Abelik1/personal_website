@@ -1,6 +1,8 @@
-# Big Brother Assistant
+# ORION
 
-Big Brother Assistant is a Windows-first assistant with voice and text input, wake-word gating, LLM-first capability selection, structured tool orchestration, guarded execution, memory features, and a PyQt desktop UI made up of a live overlay plus a larger dashboard surface.
+> Project reference snapshot, reviewed for portfolio alignment on 9 September 2026. Commands and paths below belong to the separate project repository. They do not run in this website. Upstream completeness and changes in private repositories have not been independently verified. See [the website README](README.md) and [content audit](docs/content-audit.md).
+
+ORION is a Windows-first assistant with voice and text input, wake-word gating, LLM-first capability selection, structured tool orchestration, guarded execution, memory features, and a PyQt desktop UI made up of a live overlay plus a larger dashboard surface.
 
 ## Quick Start
 
@@ -103,11 +105,11 @@ Important current contracts:
 
 ## Canonical Docs
 
-- [Architecture](docs/architecture.md)
-- [Development](docs/development.md)
-- [Testing](docs/testing.md)
-- [Email Setup](docs/integrations/email-setup.md)
-- [Future Plans](docs/future-plans.md)
+- `docs/architecture.md` (in the upstream project)
+- `docs/development.md` (in the upstream project)
+- `docs/testing.md` (in the upstream project)
+- `docs/integrations/email-setup.md` (in the upstream project)
+- `docs/future-plans.md` (in the upstream project)
 
 ## Planner And Email Quick Checks
 

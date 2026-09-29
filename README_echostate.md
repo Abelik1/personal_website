@@ -1,5 +1,7 @@
 # 🧠 EchoState & Heisenberg Chain
 
+> Project reference snapshot, reviewed for portfolio alignment on 9 September 2026. Commands and paths below belong to the separate project repository. They do not run in this website. Upstream completeness and changes in private repositories have not been independently verified. See [the website README](README.md) and [content audit](docs/content-audit.md).
+
 A PyTorch-based toolkit for physics-informed Echo State Networks (ESNs), featuring a built-in quantum simulator for spin chain dynamics using the Heisenberg model.
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -83,7 +85,7 @@ A physics simulation module demonstrating how to use ESNs for learning quantum d
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/physics_echostate.git
+git clone https://github.com/Abelik1/physics_echostate.git
 cd physics_echostate
 
 # Create and activate virtual environment (recommended)
@@ -671,7 +673,7 @@ If you use this code in your research, please cite:
   author = {Alexander Belik},
   title = {EchoState \& Heisenberg Chain: Physics-Informed Reservoir Computing},
   year = {2025},
-  url = {https://github.com/yourusername/physics_echostate}
+  url = {https://github.com/Abelik1/physics_echostate}
 }
 ```
 

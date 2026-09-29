@@ -1,5 +1,13 @@
+export type ProjectMedia = {
+  kind: "image" | "video";
+  src: string;
+  poster?: string;
+  caption: string;
+};
+
 export type Project = {
   title: string;
+  category: "Software & AI" | "Scientific computing" | "Research";
   eyebrow: string;
   short: string;
   summary: string;
@@ -8,18 +16,36 @@ export type Project = {
   stack: string[];
   impact: string;
   accent: "cyan" | "green" | "amber";
-  visual: "assistant" | "car" | "quantum" | "thesis" | "chemistry" | "spectroscopy";
+  status?: string;
+  mediaLabel?: string;
+  media?: ProjectMedia[];
+  visual:
+    | "assistant"
+    | "car"
+    | "quantum"
+    | "thesis"
+    | "spectroscopy"
+    | "hpc"
+    | "lab"
+    | "chemistry"
+    | "home"
+    | "workspace";
   link?: {
     label: string;
     href: string;
   };
 };
 
+export type HeroDemo = {
+  name: string;
+  src: string;
+  poster: string;
+};
+
 export type Experience = {
   period: string;
   start: string;
   end: string;
-  lane: "top-high" | "top-low" | "bottom-low" | "bottom-high";
   role: string;
   place: string;
   details: string[];
@@ -56,12 +82,20 @@ export type ThesisTechnicalItem = {
   body: string;
 };
 
+// The hero dome cycles through a few of the Leonardo demos. Files come from public/media.
+export const heroDemos: HeroDemo[] = [
+  { name: "Black-hole lensing", src: "/media/hpc-demos/black_hole.mp4", poster: "/media/hpc-demos/black_hole.jpg" },
+  { name: "Virtual wind tunnel", src: "/media/hpc-demos/fluid.mp4", poster: "/media/hpc-demos/fluid.jpg" },
+  { name: "Living mathematics", src: "/media/hpc-demos/reaction_diffusion.mp4", poster: "/media/hpc-demos/reaction_diffusion.jpg" },
+  { name: "Galaxy collision, 3D gravity", src: "/media/hpc-demos/galaxy_collision_3d.mp4", poster: "/media/hpc-demos/galaxy_collision_3d.jpg" }
+];
+
 export const profile = {
   name: "Alexander Belik",
-  title: "Theoretical Physics | AI Systems | Scientific Software",
+  title: "Theoretical Physics | Scientific Computing | AI Systems",
   location: "Dublin, Ireland",
   email: "abelik1@outlook.com",
-  github: "https://github.com/ABelik1",
+  github: "https://github.com/Abelik1",
   linkedin: "https://www.linkedin.com/in/alexander-belik/",
   researchGate: "https://www.researchgate.net/profile/Alexander-Belik",
   rscPublication: "https://pubs.rsc.org/en/content/articlelanding/2026/tc/d6tc00004e",
@@ -70,21 +104,46 @@ export const profile = {
   thesis: "/documents/locally-thermal-from-global-athermality.pdf",
   capstoneSlides: "/documents/capstone-slides.pdf",
   intro:
-    "I build research tools, machine-learning systems, and full-stack products across theoretical physics, automation, scientific simulation, and data-heavy software."
+    "I build research platforms, GPU and HPC simulation tooling, machine-learning systems, and full-stack products across theoretical physics, scientific computing, and data-heavy software."
 };
 
 export const identityChips = [
   "Physics research",
+  "HPC and GPU computing",
   "AI and ML systems",
-  "Full-stack tools",
-  "Scientific computing"
+  "Research platforms"
 ];
 
 export const projects: Project[] = [
   {
-    title: "ORION / Big Brother Assistant",
+    title: "Inhabis",
+    eyebrow: "Home platform",
+    status: "In progress",
+    short:
+      "A local-first operating layer for a connected home: one trusted model of the house, explicit policy, and evidence that an action actually worked.",
+    summary:
+      "Inhabis builds a trusted model of a home, translates different device ecosystems into a consistent internal language, evaluates goals and actions against explicit policy, and records what actually happened. It is local-first, policy-first, and fail-closed: stale evidence, missing authority, or an ambiguous action is rejected with a recorded reason.",
+    problem:
+      "A home can be full of capable devices whose intelligence is fragmented. One system knows the solar output, another the car, another the heating, and none of them holds the household's priorities, so an ordinary goal like using up spare solar power is not a command any single device can take.",
+    built: [
+      "TypeScript server with separated layers for operational state, derived planning context, and constrained planning",
+      "Embedded Matter controller plus an Android companion that performs BLE and Thread onboarding away from the host",
+      "Energy work spanning solar-surplus EV charging, solar production forecasting, and a learned room thermal predictor",
+      "React dashboard over devices, energy, the world model, learning, and a whole-home simulator"
+    ],
+    stack: ["TypeScript", "Node.js", "React", "Python", "Matter / Thread", "Kotlin"],
+    impact:
+      "Automation that earns trust in steps: no model, forecast, or dashboard is the final safety authority, and every action is checked against policy and verified afterwards.",
+    accent: "cyan",
+    category: "Software & AI",
+    visual: "home"
+  },
+  {
+    title: "ORION",
     eyebrow: "Local AI assistant",
-    short: "Windows-first local assistant with wake-word gating, local LLM orchestration, memory, guarded tools, and a PyQt overlay/dashboard.",
+    status: "In progress",
+    short:
+      "Windows-first local assistant with wake-word gating, local LLM orchestration, memory, guarded tools, and a PyQt overlay/dashboard.",
     summary:
       "A Windows-first voice and text assistant built around wake-word gating, local model routing, guarded tool execution, memory, and a PyQt overlay plus dashboard.",
     problem:
@@ -98,13 +157,208 @@ export const projects: Project[] = [
     stack: ["Python", "PyQt", "Ollama", "SQLite", "Whisper", "Local LLMs"],
     impact:
       "A practical local-agent architecture that keeps persona, planning, memory, and side effects separated.",
+    mediaLabel: "Interface artwork from the repository",
+    media: [
+      {
+        "kind": "image",
+        "src": "/media/orion/constellation-navigation.webp",
+        "caption": "The assistant's navigation: each domain, from memory to workflows, is its own constellation."
+      },
+      {
+        "kind": "image",
+        "src": "/media/orion/memory-domain.webp",
+        "caption": "Interface artwork for the memory domain, shipped with the ORION UI."
+      }
+    ],
     accent: "cyan",
+    category: "Software & AI",
     visual: "assistant"
   },
   {
-    title: "Choose Car",
+    title: "Orion Mini",
+    eyebrow: "Desktop workspace",
+    status: "In progress",
+    short:
+      "Local-first Windows workspace for projects, tasks, reminders, transcription, and an assistant, with React rendering inside a Qt shell.",
+    summary:
+      "A personal Windows desktop workspace that holds conversations, projects, tasks, reminders, and an AI assistant in one local application. React renders inside PySide6 and Qt WebEngine, and the packaged build ships a bundled dashboard.",
+    problem:
+      "Personal tooling scatters across a browser, a notes app, and a terminal. Pulling it back into one local application only works if the app is precise about where data goes and what it is allowed to do.",
+    built: [
+      "Multi-track transcription library with checkpoints, corrections, anchored notes, and timestamped exports",
+      "Activity-aware reminders with idle detection and escalating native alerts that cannot be quietly dismissed",
+      "Assistant with persistent project conversations, transcript retrieval, and selectable skills",
+      "Model routing across local Ollama, provider APIs, or existing CLI logins, with no arbitrary skill-code execution"
+    ],
+    stack: ["Python", "PySide6 / Qt", "React", "TypeScript", "CUDA", "Whisper"],
+    impact:
+      "One local surface for the working day, where transcription, reminders, and assistance all run against real project state.",
+    accent: "green",
+    category: "Software & AI",
+    visual: "workspace"
+  },
+  {
+    title: "Leonardo Visual Demos",
+    eyebrow: "HPC and GPU simulation",
+    short:
+      "Thirteen GPU-accelerated physics demonstrations that run headlessly on the Leonardo supercomputer and replay through a browser viewer.",
+    summary:
+      "A portable gallery of thirteen visual high-performance computing demonstrations for public engagement. Each demo separates headless scientific computation from presentation: the solver writes numbered frames and metadata, while a lightweight web viewer handles playback, controls, readouts, and saved runs.",
+    problem:
+      "Live scientific demonstrations tend to fail at the venue. They assume a graphics context, a fast link to the cluster, and a solver that finishes on cue, and a batch queue on a supercomputer guarantees none of those.",
+    built: [
+      "Thirteen solvers spanning lattice-Boltzmann flow, particle-mesh cosmology, N-body galaxy collisions, reaction-diffusion, plasma control, and molecular dynamics",
+      "One demo contract that runs on NumPy, CuPy/CUDA, or a hybrid pipeline overlapping GPU solving with CPU frame encoding",
+      "SLURM job templates for the CPU and A100 Booster partitions, with preflight, submission, and sync scripts",
+      "Browser viewer with interactive scientific controls, deep-zoom tiles, and replay of previously computed runs"
+    ],
+    stack: ["Python", "CuPy / CUDA", "PyTorch", "NumPy", "SLURM", "JavaScript"],
+    impact:
+      "Exhibition-grade demonstrations that stay inspectable: the same run reproduces on a laptop, a CUDA desktop, or a Leonardo node, and a partially finished job is already usable.",
+    mediaLabel: "Demo captures from the repository",
+    media: [
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/black_hole.mp4",
+        "poster": "/media/hpc-demos/black_hole.jpg",
+        "caption": "Black-hole lensing: image-space gravitational lensing with a numerical 3D photon-path view."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/pbh.mp4",
+        "poster": "/media/hpc-demos/pbh.jpg",
+        "caption": "Primordial black-hole threshold: a reduced radial model at the boundary between collapse and dispersion."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/fluid.mp4",
+        "poster": "/media/hpc-demos/fluid.jpg",
+        "caption": "Virtual wind tunnel: D2Q9 lattice-Boltzmann flow with advected streaklines and configurable obstacles."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/cosmic_web.mp4",
+        "poster": "/media/hpc-demos/cosmic_web.jpg",
+        "caption": "Cosmic-web formation: particle-mesh gravity with expanding space and gas-composition comparisons."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/galaxy_collision.mp4",
+        "poster": "/media/hpc-demos/galaxy_collision.jpg",
+        "caption": "Milky Way and Andromeda: restricted N-body evolution using physical mass and encounter parameters."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/galaxy_collision_3d.mp4",
+        "poster": "/media/hpc-demos/galaxy_collision_3d.jpg",
+        "caption": "Full 3D galaxy collision: direct softened all-pairs gravity over disc, bulge, and halo particles."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/reaction_diffusion.mp4",
+        "poster": "/media/hpc-demos/reaction_diffusion.jpg",
+        "caption": "Living mathematics: Gray-Scott reaction-diffusion evolving from a seed into an emergent pattern."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/crystal.mp4",
+        "poster": "/media/hpc-demos/crystal.jpg",
+        "caption": "Crystal growth: recursive anisotropic growth with multiple habits and deep zoom."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/neural_wall.mp4",
+        "poster": "/media/hpc-demos/neural_wall.jpg",
+        "caption": "Neural-network wall: a batched coordinate-network training workload revealing many networks at once."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/fusion_plasma.mp4",
+        "poster": "/media/hpc-demos/fusion_plasma.jpg",
+        "caption": "Star in a Bottle: a reduced nonlinear plasma-wave lattice projected onto a rotatable tokamak torus."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/plasma_guardian.mp4",
+        "poster": "/media/hpc-demos/plasma_guardian.jpg",
+        "caption": "AI Plasma Guardian: a trainable neural controller learning to suppress a plasma instability."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/weather_ensemble.mp4",
+        "poster": "/media/hpc-demos/weather_ensemble.jpg",
+        "caption": "Storm Factory: a barotropic-vorticity atmosphere turning small initial uncertainty into diverging forecasts."
+      },
+      {
+        "kind": "video",
+        "src": "/media/hpc-demos/molecular_dynamics.mp4",
+        "poster": "/media/hpc-demos/molecular_dynamics.jpg",
+        "caption": "Molecular Machine: coarse-grained 3D molecular dynamics with all-pairs interactions and ensemble comparisons."
+      }
+    ],
+    accent: "cyan",
+    category: "Scientific computing",
+    visual: "hpc",
+    link: {
+      label: "View on GitHub",
+      href: "https://github.com/Abelik1/HPC_Visual_Demos"
+    }
+  },
+  {
+    title: "LabFlow",
+    eyebrow: "Research data platform",
+    short:
+      "Digital lab notebook for a materials research institute that stores measurements as structured relational records.",
+    summary:
+      "A digital lab notebook and experimental data management platform for a materials research institute. It is sample-centred in the interface and project-organised for researchers, storing measurements as structured relational records so provenance stays machine-readable, searchable, and auditable.",
+    problem:
+      "Research data usually ends up as files in folders named by whoever saved them. Once provenance lives in a filename, nothing downstream can be searched, audited, or trusted without a person in the loop.",
+    built: [
+      "React and TypeScript frontend over a FastAPI and PostgreSQL backend with versioned migrations",
+      "Sample, project, instrument, and booking models with role-based access across organisations and sites",
+      "Instrument capture path that moves large measurement files from the bench into named, structured records",
+      "Containerised deployment plus a production-shaped local simulator, so backend changes are tested against the real topology"
+    ],
+    stack: ["React", "TypeScript", "FastAPI", "PostgreSQL", "Docker", "Tailwind CSS"],
+    impact:
+      "Bench measurements become searchable, auditable records at the moment they are taken.",
+    mediaLabel: "Interface screenshots",
+    media: [
+      {
+        "kind": "image",
+        "src": "/media/labflow/home-dashboard.webp",
+        "caption": "Workspace overview: project groups, recent activity, and the busiest workspaces."
+      },
+      {
+        "kind": "image",
+        "src": "/media/labflow/samples-tab.webp",
+        "caption": "Samples: every physical sample carries its own identity and history."
+      },
+      {
+        "kind": "image",
+        "src": "/media/labflow/new-experiment-form.webp",
+        "caption": "New experiment: structured capture that makes the record complete at the point of work."
+      },
+      {
+        "kind": "image",
+        "src": "/media/labflow/data-tab.webp",
+        "caption": "Data: files attached to the experiment that produced them."
+      },
+      {
+        "kind": "image",
+        "src": "/media/labflow/export-tab.webp",
+        "caption": "Export: pulling a structured slice of the record back out."
+      }
+    ],
+    accent: "green",
+    category: "Software & AI",
+    visual: "lab"
+  },
+  {
+    title: "CarCove",
     eyebrow: "Product and data system",
-    short: "Ireland-focused car keep-vs-switch optimizer with FastAPI, React, SQLite, scraping, normalization, and admin review tools.",
+    short:
+      "Ireland-focused car keep-vs-switch optimizer with FastAPI, React, SQLite, scraping, normalization, and admin review tools.",
     summary:
       "An Ireland-focused keep-vs-switch car optimizer with FastAPI services, React/TypeScript UI, SQLite storage, scraping pipelines, normalization review, and admin browsers.",
     problem:
@@ -119,12 +373,14 @@ export const projects: Project[] = [
     impact:
       "Turns fragmented car-market information into inspectable, normalized decision data for real purchase tradeoffs.",
     accent: "green",
+    category: "Software & AI",
     visual: "car"
   },
   {
     title: "EchoState and Heisenberg Chain",
     eyebrow: "Physics-informed ML",
-    short: "PyTorch Echo State Network toolkit plus a Heisenberg spin-chain simulator for learning quantum time dynamics.",
+    short:
+      "PyTorch Echo State Network toolkit plus a Heisenberg spin-chain simulator for learning quantum time dynamics.",
     summary:
       "A PyTorch Echo State Network toolkit paired with a quantum spin-chain simulator for learning Heisenberg dynamics from generated observables.",
     problem:
@@ -138,27 +394,65 @@ export const projects: Project[] = [
     stack: ["PyTorch", "NumPy", "SciPy", "QuTiP", "Optuna", "Python"],
     impact:
       "Connects reservoir computing with quantum dynamics prediction while preserving a reusable ML library underneath.",
+    mediaLabel: "Result figures from the repository",
+    media: [
+      {
+        "kind": "image",
+        "src": "/media/echostate/heisenberg-overlay.webp",
+        "caption": "Trained echo-state predictions against exact Heisenberg-chain dynamics for three qubits of a five-site chain."
+      }
+    ],
     accent: "amber",
-    visual: "quantum"
+    category: "Scientific computing",
+    visual: "quantum",
+    link: {
+      label: "View on GitHub",
+      href: "https://github.com/Abelik1/physics_echostate"
+    }
   },
   {
     title: "Locally Thermal from Global Athermality",
     eyebrow: "Capstone thesis",
-    short: "Quantum thermodynamics project on globally correlated states whose local subsystems are exactly thermal.",
+    short:
+      "Quantum thermodynamics project on globally correlated states whose local subsystems are exactly thermal, with an SDP toolkit behind it.",
     summary:
-      "A research project on bipartite quantum states whose local marginals are thermal, so all deviation from global equilibrium must be stored in correlations.",
+      "A research project on bipartite quantum states whose local marginals are thermal, so all deviation from global equilibrium must be stored in correlations, supported by a semidefinite-programming toolkit that tests convertibility numerically.",
     problem:
       "If local athermality is removed exactly, the remaining thermodynamic resource becomes a geometric and operational question about correlations.",
     built: [
       "Characterized locally thermal states as affine slices of the positive semidefinite cone",
       "Derived a full nine-parameter two-qubit normal form",
       "Reduced generic two-qubit positivity to a Schur-complement criterion",
-      "Studied global versus local Gibbs-preserving convertibility with SDP methods"
+      "Built an SDP toolkit testing global against verified local Gibbs-preserving convertibility, with structured reproducible run artifacts"
     ],
     stack: ["Quantum thermodynamics", "Linear algebra", "SDP methods", "Python", "LaTeX"],
     impact:
       "Shows how free-energy monotonicity becomes mutual-information monotonicity on the locally thermal manifold.",
+    mediaLabel: "Result figures from the solver",
+    media: [
+      {
+        "kind": "image",
+        "src": "/media/thesis/lt-geometry.webp",
+        "caption": "Locally thermal geometry: mutual information against athermality for interior and extremal states."
+      },
+      {
+        "kind": "image",
+        "src": "/media/thesis/lt-boundary-slice.webp",
+        "caption": "Boundary of the locally thermal set on a diagonal correlation slice."
+      },
+      {
+        "kind": "image",
+        "src": "/media/thesis/convertibility-global.webp",
+        "caption": "Convertibility under global Gibbs-preserving maps across the slice."
+      },
+      {
+        "kind": "image",
+        "src": "/media/thesis/convertibility-local.webp",
+        "caption": "The same slice under local Gibbs-preserving maps, where the ordering changes."
+      }
+    ],
     accent: "cyan",
+    category: "Research",
     visual: "thesis",
     link: {
       label: "Read thesis",
@@ -166,69 +460,82 @@ export const projects: Project[] = [
     }
   },
   {
-    title: "DFT Hamilton / PySCF Work",
-    eyebrow: "Computational chemistry",
-    short: "Dockerized PySCF workflow for molecular examples, spin-correlation tests, and custom functional comparisons.",
-    summary:
-      "A Dockerized PySCF environment for molecular examples, spin-correlation experiments, endpoint sensitivity checks, and custom functional comparisons.",
-    problem:
-      "PySCF does not build natively on Windows, so reproducible computational chemistry experiments need a clean Linux container workflow.",
-    built: [
-      "One-command Docker setup for PySCF verification",
-      "H2 RHF and DFT checks plus open-shell lithium UHF validation",
-      "Molecular examples exported to CSV and Markdown",
-      "Spin-correlation and endpoint sensitivity analysis scripts"
-    ],
-    stack: ["Docker", "PySCF", "Python", "LibXC", "CSV", "Markdown"],
-    impact:
-      "Makes density-functional experiments repeatable on a Windows-first research workstation.",
-    accent: "green",
-    visual: "chemistry"
-  },
-  {
     title: "Ferronematic Liquid-Crystal Research",
     eyebrow: "Published experimental research",
-    short: "Python experiment control, spectroscopy data analysis, and ferronematic liquid-crystal research contributing to an RSC publication.",
+    short:
+      "Python experiment control, spectroscopy data analysis, and ferronematic liquid-crystal research contributing to an RSC publication.",
     summary:
       "Experimental and computational work on ferronematic liquid crystals, combining Python automation, spectroscopy data acquisition, analysis, and research outputs that contributed to co-authored publication work.",
     problem:
       "Ferronematic liquid-crystal experiments require reproducible control, structured spectroscopy measurements, and careful analysis across changing material compositions and experimental conditions.",
     built: [
-      "Python control system for automated spectroscopy measurement workflows",
+      "Python control system driving a spectroscopy instrument through its Windows acquisition software",
+      "Sequential sample imaging under stepped temperature and voltage control",
       "Data acquisition and structured logging for repeated experimental runs",
-      "Analysis support for ferronematic liquid-crystal and ferrofluid research",
       "Research contributions feeding into co-authored liquid-crystal publication work"
     ],
     stack: ["Python", "Instrumentation", "Data acquisition", "Matplotlib", "Research workflow"],
     impact:
       "Supported reproducible experimental workflows and downstream data analysis for published ferronematic liquid-crystal research.",
     accent: "amber",
+    category: "Research",
     visual: "spectroscopy",
     link: {
       label: "RSC publication",
       href: profile.rscPublication
     }
+  },
+  {
+    title: "DFT Hamilton",
+    eyebrow: "Computational chemistry",
+    short:
+      "Containerised PySCF environment for density-functional and Hartree-Fock experiments, with functional and spin-correlation comparisons.",
+    summary:
+      "A Docker-based PySCF workflow that makes density-functional and Hartree-Fock experiments reproducible on a platform the reference stack does not build on, together with scripted molecular examples and analysis outputs.",
+    problem:
+      "A computational chemistry result is only as trustworthy as the environment that produced it, and the reference stack has no native build on the machine where the work actually happens.",
+    built: [
+      "Docker environment with one-command setup, verifying basis loading, RHF, LibXC DFT, and open-shell UHF",
+      "Scripted molecular example runs that write CSV and Markdown result tables",
+      "Spin-correlation analysis comparing a proposed correlation scaling against LibXC reference functionals",
+      "Ionisation-energy checks that show where the custom functional agrees and where it breaks down"
+    ],
+    stack: ["Python", "PySCF", "LibXC", "Docker", "NumPy"],
+    impact:
+      "A repeatable environment where a functional idea can be tested against reference results.",
+    accent: "green",
+    category: "Scientific computing",
+    visual: "chemistry"
   }
 ];
 
 export const experiences: Experience[] = [
   {
-    period: "Oct 2025 - present",
+    period: "May 2026 - Sep 2026",
+    start: "2026-05",
+    end: "2026-09",
+    role: "Scientific Software Developer",
+    place: "Trinity College Dublin",
+    details: [
+      "Built a digital lab notebook platform storing experimental measurements as structured, auditable records.",
+      "Developed GPU-accelerated physics demonstrations that run headlessly on the Leonardo EuroHPC system."
+    ]
+  },
+  {
+    period: "Oct 2025 - May 2026",
     start: "2025-10",
     end: "2026-05",
-    lane: "top-low",
     role: "Teaching Assistant",
     place: "Trinity College Dublin",
     details: [
-      "Lead weekly tutorials and problem-solving sessions aligned with lectures.",
-      "Grade assignments and exams with clear, constructive feedback."
+      "Led weekly tutorials and problem-solving sessions aligned with lectures.",
+      "Graded assignments and exams with clear, constructive feedback."
     ]
   },
   {
     period: "Jun 2024 - Dec 2025",
     start: "2024-06",
     end: "2025-12",
-    lane: "top-high",
     role: "Software Engineer (EdTech)",
     place: "Grinds360",
     details: [
@@ -240,7 +547,6 @@ export const experiences: Experience[] = [
     period: "Jun 2025 - Sep 2025",
     start: "2025-06",
     end: "2025-09",
-    lane: "bottom-high",
     role: "Research Assistant",
     place: "Trinity College Dublin, CRANN Institute",
     details: [
@@ -252,7 +558,6 @@ export const experiences: Experience[] = [
     period: "May 2024 - Sep 2024",
     start: "2024-05",
     end: "2024-09",
-    lane: "bottom-low",
     role: "Experimental / Computational Research Assistant",
     place: "Trinity College Dublin",
     details: [
@@ -265,7 +570,6 @@ export const experiences: Experience[] = [
     period: "Jul 2021 - Jan 2024",
     start: "2021-07",
     end: "2024-01",
-    lane: "bottom-high",
     role: "Exam Corrector",
     place: "The Dublin Academy of Education",
     details: ["Corrected exams and coursework and supported marking workflows."]
@@ -278,12 +582,27 @@ export const skillClusters: SkillCluster[] = [
     skills: ["Python", "NumPy", "PyTorch", "Mathematica", "C/C++ simulations", "Matplotlib"]
   },
   {
+    title: "HPC and GPU",
+    skills: ["CUDA / CuPy", "SLURM", "Parallel pipelines", "Benchmarking", "Linux", "Numerical solvers"]
+  },
+  {
     title: "Web and product",
-    skills: ["React", "TypeScript", "FastAPI", "SQLite", "UX collaboration", "Figma"]
+    skills: ["React", "TypeScript", "Node.js", "FastAPI", "Tailwind CSS", "UX collaboration", "Figma"]
+  },
+  {
+    title: "Data and infrastructure",
+    skills: ["PostgreSQL", "SQLite", "Docker", "Git / GitHub", "GitHub Actions", "Data pipelines"]
   },
   {
     title: "AI systems",
-    skills: ["Local LLM workflows", "Agent orchestration", "Memory systems", "Tool routing", "Automation"]
+    skills: [
+      "Local LLM workflows",
+      "Agent orchestration",
+      "Memory systems",
+      "Tool routing",
+      "Speech to text",
+      "Automation"
+    ]
   },
   {
     title: "Research practice",
@@ -293,8 +612,13 @@ export const skillClusters: SkillCluster[] = [
 
 export const education = [
   {
+    title: "M.Sc. High-Performance Computing",
+    detail: "Trinity College Dublin, current",
+    focus: "Parallel programming, GPU acceleration, and large-scale numerical simulation."
+  },
+  {
     title: "B.A. Theoretical Physics",
-    detail: "Trinity College Dublin, expected 2026",
+    detail: "Trinity College Dublin, 2022-2026",
     focus: "Quantum mechanics, statistical mechanics, quantum field theory, and computational physics."
   },
   {
@@ -306,29 +630,52 @@ export const education = [
 
 export const workstreams: Workstream[] = [
   {
+    area: "Home platforms",
+    title: "An operating layer for a house",
+    description:
+      "Inhabis turns fragmented device ecosystems into one policy-checked model, with evidence that an action actually landed."
+  },
+  {
+    area: "HPC and visualisation",
+    title: "Supercomputer demonstrations",
+    description:
+      "Thirteen physics solvers behind one compute contract that spans NumPy, CUDA, and SLURM batch jobs on Leonardo."
+  },
+  {
+    area: "Research platforms",
+    title: "Structured experimental records",
+    description:
+      "LabFlow replaces files-in-folders provenance with relational sample, measurement, and instrument records."
+  },
+  {
     area: "AI systems",
     title: "Local-first assistant architecture",
-    description: "ORION explores how personal automation can combine local models, memory, safety gates, and practical desktop tooling."
+    description:
+      "ORION and Orion Mini explore how personal automation combines local models, memory, safety gates, and desktop tooling people actually use."
   },
   {
     area: "Physics ML",
     title: "Reservoir computing for dynamics",
-    description: "Echo State Networks are used as compact sequence learners for quantum spin-chain observables and stability analysis."
-  },
-  {
-    area: "Product engineering",
-    title: "Car-market data tooling",
-    description: "Choose Car is a technical product project built around scraping, normalization, admin review, and decision support."
+    description:
+      "Echo State Networks are used as compact sequence learners for quantum spin-chain observables and stability analysis."
   },
   {
     area: "Quantum thermodynamics",
     title: "Locally thermal correlations",
-    description: "The capstone studies how correlations store global athermality when every subsystem already looks thermal."
+    description:
+      "The capstone studies how correlations store global athermality when every subsystem already looks thermal."
+  },
+  {
+    area: "Applied modelling",
+    title: "Traffic flow on real networks",
+    description:
+      "A hackathon model overlays capacity-aware flows on OpenStreetMap graphs, simplified into junction supernodes."
   },
   {
     area: "Materials research",
     title: "Ferronematic liquid crystals",
-    description: "Experimental control, spectroscopy analysis, and co-authored publication work on ferroelectric and hyper-dielectric modes."
+    description:
+      "Experimental control, spectroscopy analysis, and co-authored publication work on ferroelectric and hyper-dielectric modes."
   }
 ];
 
@@ -700,3 +1047,13 @@ export const thesisSlides: ThesisSlide[] = [
     ]
   }
 ];
+
+export const projectCategories = ["All work", "Software & AI", "Scientific computing", "Research"] as const;
+
+export const portfolioCopy = {
+  kicker: "Theoretical physicist & software developer",
+  currentTitle: "M.Sc. High-Performance Computing",
+  currentDetail: "Trinity College Dublin. Working across parallel computing, scientific software, and local AI systems.",
+  workTitle: "Ideas, made tangible.",
+  workIntro: "A collection of research, scientific software, and tools for everyday problems. Explore a project for the problem, the engineering, and what came out of it."
+};

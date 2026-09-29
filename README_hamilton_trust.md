@@ -1,9 +1,11 @@
 # DFT Hamilton PySCF Environment
 
+> Project reference snapshot, reviewed for portfolio alignment on 9 September 2026. Commands and paths below belong to the separate project repository. They do not run in this website. Upstream completeness and changes in private repositories have not been independently verified. See [the website README](README.md) and [content audit](docs/content-audit.md).
+
 PySCF does not support native Windows builds. This project uses Docker to run
 PySCF in a Linux container.
 
-See [INSTALLATION.md](INSTALLATION.md) for the full setup guide.
+See `INSTALLATION.md` (in the upstream project) for the full setup guide.
 
 ## One-Command Setup
 
@@ -73,7 +75,7 @@ docker compose run --rm pyscf python examples/run_custom_functional_comparison.p
 This writes `results/custom_functional_comparison.csv` and
 `results/custom_functional_comparison.md`.
 
-See [CUSTOM_FUNCTIONAL_IMPLEMENTATION.md](CUSTOM_FUNCTIONAL_IMPLEMENTATION.md)
+See `CUSTOM_FUNCTIONAL_IMPLEMENTATION.md` (in the upstream project)
 for the implementation notes.
 
 Run the endpoint spin-correlation prototype:
@@ -84,7 +86,7 @@ docker compose run --rm pyscf python examples/run_endpoint_spin_correlation_comp
 
 This writes `results/endpoint_spin_correlation_diagnostics.*` and
 `results/endpoint_spin_correlation_comparison.*`. See
-[ENDPOINT_SPIN_CORRELATION_IMPLEMENTATION.md](ENDPOINT_SPIN_CORRELATION_IMPLEMENTATION.md)
+`ENDPOINT_SPIN_CORRELATION_IMPLEMENTATION.md` (in the upstream project)
 for the implementation notes.
 
 Run endpoint sensitivity checks:
