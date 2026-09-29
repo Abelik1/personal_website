@@ -100,7 +100,7 @@ test("Inhabis card opens the landing page, skills keep their own colours, timeli
   const distinct = await page.locator(".skill-pill").evaluateAll((els) => new Set(els.map((el) => (el as HTMLElement).style.getPropertyValue("--skill"))).size);
   expect(distinct).toBeGreaterThan(30);
   await expect(page.locator(".timeline-card h3", { hasText: "Co-founder and Engineer" })).toHaveCount(1);
-  await expect(page.locator(".timeline-card h3", { hasText: "HPC Demonstration Developer" })).toHaveCount(1);
+  await expect(page.locator(".timeline-card h3", { hasText: "EuroHPC Student Ambassador" })).toHaveCount(1);
   const covers = await page.locator(".project-cover img, .project-cover video").count();
   expect(covers).toBeGreaterThanOrEqual(9);
 });

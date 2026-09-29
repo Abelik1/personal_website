@@ -38,6 +38,7 @@ No new claims of deployment, usage, numerical accuracy, or completed work were a
 - Restored the original full-page, pointer-responsive vector simulation, with tab-visibility handling and live reduced-motion support.
 - Removed third-party skill-logo requests. Skill logos come from the bundled Simple Icons package and Lucide, so no logo service is contacted at runtime.
 - 29 September 2026: cards now use each project's own imagery (screenshots, a DFT chart drawn from `results/endpoint_spin_correlation_comparison.csv`, and clips), a per-project hue, and hover facts. The Inhabis card links to inhabis.ie. The Inhabis and EuroHPC Demo Lab entries were added to the experience timeline and the skills grid was expanded. Both CVs were regenerated and remain two pages.
+- 29 September 2026: the Ferronematic project page shows seven figures cropped from the open-access preprint of the paper (arXiv:2504.19633, CC BY 4.0, matching the RSC article J. Mater. Chem. C 2026, 14, 6808), with attribution on the page. The figures are the paper's measurements and are captioned as such. The EuroHPC timeline entry now reads EuroHPC Student Ambassador.
 
 ## Maintenance checklist
 

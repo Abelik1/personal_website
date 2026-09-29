@@ -58,6 +58,8 @@ export type Project = {
   status?: string;
   mediaLabel?: string;
   media?: ProjectMedia[];
+  // Attribution shown above a gallery of figures taken from a paper.
+  mediaCredit?: string;
   visual:
     | "assistant"
     | "car"
@@ -626,6 +628,18 @@ const projectInputs: ProjectInput[] = [
     stack: ["Python", "Instrumentation", "Data acquisition", "Matplotlib", "Research workflow"],
     impact:
       "Supported reproducible experimental workflows and downstream data analysis for published ferronematic liquid-crystal research.",
+    mediaLabel: "Figures from the published paper",
+    mediaCredit:
+      "Figures reproduced under CC BY 4.0 from Ferroelectric and hyper dielectric modes in ferronematic liquid crystals, Journal of Materials Chemistry C, 2026, 14, 6808 (open-access preprint: arXiv:2504.19633). The spectrometer control and analysis work above contributed to this paper, and the figures show the paper's own measurements.",
+    media: [
+      { kind: "image", src: "/media/ferronematic/birefringence.webp", caption: "Birefringence of the three mixtures against temperature at 550 nm, measured with a fibre spectrometer. The dashed red line is the Haller fit that confirms an ordinary nematic phase at high temperature. From the paper." },
+      { kind: "image", src: "/media/ferronematic/pom-textures.webp", caption: "Polarising-microscope textures of the MIX 10, MIX 25 and MIX 50 cells from the isotropic phase down to room temperature. From the paper." },
+      { kind: "image", src: "/media/ferronematic/pom-cell.webp", caption: "Two domains of opposite chirality in the ferroelectric nematic phase, seen by rotating the polariser either side of crossed. From the paper." },
+      { kind: "image", src: "/media/ferronematic/switching-current.webp", caption: "Polarisation reversal current in a 4 µm cell for WJ-16, DIO and MIX 25. Only the ferroelectric phases show a current peak. From the paper." },
+      { kind: "image", src: "/media/ferronematic/permittivity-3d.webp", caption: "Dielectric permittivity and loss of MIX 25 across temperature and frequency. From the paper." },
+      { kind: "image", src: "/media/ferronematic/relaxation-fits.webp", caption: "Dielectric loss spectra fitted to three relaxation processes at four temperatures. From the paper." },
+      { kind: "image", src: "/media/ferronematic/dielectric-strength.webp", caption: "Strength and frequency of the relaxation processes against temperature in a planar cell. From the paper." }
+    ],
     accent: "amber",
     category: "Research",
     visual: "spectroscopy",
@@ -751,6 +765,7 @@ const presentation: Record<string, ProjectPresentation> = {
   },
   "ferronematic-liquid-crystal-research": {
     hue: 8,
+    cover: { kind: "image", src: "/media/ferronematic/birefringence.webp", alt: "Birefringence of three ferronematic mixtures against temperature, with the phase transitions marked", position: "50% 40%" },
     peek: [
       "Python drives the spectrometer through its Windows acquisition software",
       "Sequential imaging under stepped temperature and voltage",
@@ -792,10 +807,10 @@ export const experiences: Experience[] = [
     period: "Aug 2026 - Sep 2026",
     start: "2026-08",
     end: "2026-09",
-    role: "HPC Demonstration Developer",
+    role: "EuroHPC Student Ambassador",
     place: "EuroHPC Demo Lab 2026",
     details: [
-      "Built fourteen GPU physics and AI demos and a walk-up viewer, rendered on Leonardo A100 nodes and Brain++ Discoverer GB200 nodes and replayed on a public stand.",
+      "As a EuroHPC student ambassador, built fourteen GPU physics and AI demos and a walk-up viewer for the Demo Lab, rendered on Leonardo A100 nodes and Brain++ Discoverer GB200 nodes and replayed on a public stand.",
       "Wrote the SLURM job templates and run bundles that move saved runs between the clusters and a stand laptop.",
       "Added a front end for the team's MUrB N-body code, which reached 93.8% parallel efficiency on four A100s at 500,000 bodies."
     ]

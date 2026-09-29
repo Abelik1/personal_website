@@ -364,7 +364,7 @@ function projectSections(project: Project): { lead: string[]; stats?: { value: s
       { title: "The problem", body: [project.problem] },
       { title: "What I built", bullets: project.built },
       ...(project.media && project.media.length > 0
-        ? [{ title: project.mediaLabel ?? "From the repository", media: project.media }]
+        ? [{ title: project.mediaLabel ?? "From the repository", body: project.mediaCredit ? [project.mediaCredit] : undefined, media: project.media }]
         : []),
       { title: "Outcome", body: [project.impact] }
     ]
