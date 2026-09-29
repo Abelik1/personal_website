@@ -14,10 +14,10 @@ Reviewed 9 September 2026 against the supplied repository content and project re
 
 | Website project | Supplied source | Updated illustration |
 | --- | --- | --- |
-| Inhabis | Existing `src/content.ts` and repository guidance | Isometric home model with energy, policy, and devices |
+| Inhabis | Project overview and README in the Inhabis repository, 29 September 2026 | Isometric concept card; project page uses real Pilot Home and Android screenshots plus one labelled concept artwork |
 | ORION | `README_orion.md` | Voice waveform and orchestration stages |
 | Orion Mini | Existing `src/content.ts` | Local workspace concept |
-| Leonardo Visual Demos | Existing `src/content.ts` | Flow-field concept |
+| EuroHPC Demo Lab (was Leonardo Visual Demos) | Leonardo_Visual_Demos README and docs, and the NBody-EuroHPC README and benchmark results, 29 September 2026 | Flow-field concept card; project page uses clips converted from the repository's GIFs. The MUrB solver and benchmarks belong to the NBody-EuroHPC team repository and are credited there |
 | LabFlow | Existing `src/content.ts` | Sample-to-record structure |
 | CarCove | `README_car_website.md` | Illustrative keep/switch cost curves |
 | EchoState and Heisenberg Chain | `README_echostate.md` | Illustrative dynamics and spin chain |

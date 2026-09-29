@@ -31,7 +31,7 @@ test("background simulation and branching timeline remain responsive", async ({ 
   }
 });
 
-test("project discovery, disclosure, search and recovery", async ({ page }) => {
+test("project discovery, disclosure, search and recovery", async ({ page, isMobile }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/");
@@ -39,11 +39,19 @@ test("project discovery, disclosure, search and recovery", async ({ page }) => {
   await expect(page.locator(".project-card")).toHaveCount(10);
   await page.getByRole("button", { name: "Scientific computing", exact: true }).click();
   await expect(page.locator(".project-card")).toHaveCount(3);
-  const card = page.locator(".project-card").filter({ has: page.getByRole("heading", { name: "Leonardo Visual Demos" }) });
-  await card.locator("summary").focus();
+  const card = page.locator(".project-card").filter({ has: page.getByRole("heading", { name: "EuroHPC Demo Lab" }) });
+  if (!isMobile) {
+    await card.hover();
+    await expect(card.locator(".project-peek")).toBeVisible();
+  }
+  await card.focus();
   await page.keyboard.press("Enter");
-  await expect(card).toHaveAttribute("open", "");
-  await expect(card.getByText("What I built", { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/#project\/eurohpc-demo-lab$/);
+  await expect(page.locator("h1")).toHaveText("EuroHPC Demo Lab");
+  await expect(page.getByRole("heading", { name: "MUrB N-body on Leonardo" })).toBeVisible();
+  await expect(page.locator(".project-table").first()).toBeVisible();
+  await page.getByRole("link", { name: "All projects" }).click();
+  await expect(page.locator(".project-card")).toHaveCount(3);
   await page.getByRole("button", { name: "All work", exact: true }).click();
   await page.getByRole("searchbox").fill("matter");
   await expect(page.locator(".project-card")).toHaveCount(1);
@@ -53,6 +61,34 @@ test("project discovery, disclosure, search and recovery", async ({ page }) => {
   await page.getByRole("button", { name: "Reset filters" }).click();
   await expect(page.locator(".project-card")).toHaveCount(10);
   expect(errors).toEqual([]);
+});
+
+test("project pages load from a direct link and step between projects", async ({ page }) => {
+  await page.goto("/#project/inhabis");
+  await expect(page.locator("h1")).toHaveText("Inhabis");
+  await expect(page.locator(".project-media img").first()).toBeVisible();
+  await page.reload();
+  await expect(page.locator("h1")).toHaveText("Inhabis");
+  await page.getByRole("link", { name: /Next/ }).click();
+  await expect(page).toHaveURL(/#project\/orion$/);
+  await page.goto("/#project/no-such-project");
+  await expect(page.getByText("Project not found.")).toBeVisible();
+});
+
+test("hovering a project card agitates the background particles", async ({ page, isMobile }) => {
+  test.skip(isMobile, "hover only exists with a pointer");
+  await page.goto("/");
+  const card = page.locator(".project-card").first();
+  await card.scrollIntoViewIfNeeded();
+  const box = await card.boundingBox();
+  const canvas = page.locator("canvas.fluid-field");
+  const frame = () => canvas.evaluate((el: HTMLCanvasElement) => el.toDataURL());
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + 40);
+  await page.waitForTimeout(500);
+  const before = await frame();
+  await page.waitForTimeout(400);
+  expect(await frame()).not.toBe(before);
+  await expect(card.locator(".project-peek")).toBeVisible();
 });
 
 test("thesis links survive refresh, navigation and browser history", async ({ page }) => {

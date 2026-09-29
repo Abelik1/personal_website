@@ -1,4 +1,5 @@
 import {
+  ArrowLeft,
   ArrowUpRight,
   Search,
   X,
@@ -6,7 +7,6 @@ import {
   BarChart3,
   Bot,
   BrainCircuit,
-  ChevronDown,
   Cpu,
   Database,
   Download,
@@ -31,6 +31,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FluidField } from "./FluidField";
+import { agitateField, calmField } from "./fieldBus";
 import { ExperienceTimeline } from "./ExperienceTimeline";
 import { ProjectArtwork } from "./ProjectArtwork";
 import {
@@ -45,10 +46,12 @@ import {
   workstreams,
   heroDemos,
   type Project,
-  type ProjectMedia
+  type ProjectMedia,
+  type ProjectSection,
+  type ProjectTable
 } from "./content";
 
-type View = "portfolio" | "thesis";
+type View = "portfolio" | "thesis" | "project";
 
 const portfolioNavItems = [
   { label: "Work", href: "#work" },
@@ -257,34 +260,42 @@ function ProjectMediaItem({ item }: { item: ProjectMedia }) {
   );
 }
 
-function ProjectCard({
-  project,
-  featured = false,
-  isOpen = false,
-  side = "right",
-  onToggle
-}: {
-  project: Project;
-  featured?: boolean;
-  isOpen?: boolean;
-  side?: "left" | "right";
-  onToggle: () => void;
-}) {
+const accentHue: Record<Project["accent"], number> = { cyan: 172, green: 140, amber: 42 };
+
+// Remembered so Back from a project page returns to the same place in the grid.
+const navigation = { portfolioScroll: 0, cameFromPortfolio: false };
+// Filters survive a trip to a project page and back.
+const workFilters = { category: "All work", query: "" };
+
+function ProjectCard({ project }: { project: Project }) {
   const Icon = projectIcons[project.accent];
+  const ref = useRef<HTMLAnchorElement>(null);
+  const hue = accentHue[project.accent];
+
+  useEffect(() => {
+    const el = ref.current;
+    return () => {
+      if (el) calmField(el);
+    };
+  }, []);
 
   return (
-    <details
-      open={isOpen}
-      className={`project-card accent-${project.accent} opens-${side} ${featured ? "featured" : ""}`}
+    <a
+      ref={ref}
+      href={`#project/${project.slug}`}
+      className={`project-card accent-${project.accent}`}
+      onPointerEnter={(event) => {
+        if (event.pointerType !== "touch") agitateField(event.currentTarget, hue);
+      }}
+      onPointerLeave={(event) => calmField(event.currentTarget)}
+      onFocus={(event) => agitateField(event.currentTarget, hue)}
+      onBlur={(event) => calmField(event.currentTarget)}
+      onClick={() => {
+        navigation.portfolioScroll = window.scrollY;
+        navigation.cameFromPortfolio = true;
+      }}
     >
-      <summary
-        className="project-summary-panel"
-        aria-label={`${isOpen ? "Close" : "Explore"} ${project.title}`}
-        onClick={(event) => {
-          event.preventDefault();
-          onToggle();
-        }}
-      >
+      <div className="project-face">
         <ProjectArtwork visual={project.visual} />
         <div className="project-card__top">
           <div>
@@ -310,59 +321,183 @@ function ProjectCard({
           ))}
         </div>
         <span className="expand-cue">
-          {isOpen ? "Close details" : "Open details"}
-          <ChevronDown size={16} />
+          Open project page
+          <ArrowUpRight size={16} aria-hidden="true" />
         </span>
-      </summary>
-      <div className="project-expanded" role="group" aria-label={`${project.title} details`}>
-        <div className="project-expanded-head">
-          <h4>{project.title}</h4>
-          <button type="button" className="project-close" onClick={onToggle} aria-label={`Close ${project.title} details`}>
-            <X size={16} aria-hidden="true" />
-          </button>
-        </div>
-        <div className="project-expanded-intro">
-          <strong>Overview</strong>
-          <p className="project-expanded-summary">{project.summary}</p>
-        </div>
-        <div className="project-detail">
-          <strong>Problem</strong>
-          <p>{project.problem}</p>
-        </div>
-        <div className="project-detail">
-          <strong>What I built</strong>
-          <ul>
-            {project.built.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-        {project.media && project.media.length > 0 && (
-          <div className="project-detail">
-            <strong>{project.mediaLabel ?? "From the repository"}</strong>
-            <div className="project-media-grid">
-              {project.media.map((item) => (
-                <ProjectMediaItem key={item.src} item={item} />
-              ))}
-            </div>
-          </div>
-        )}
-        <div className="stack-list" aria-label={`${project.title} stack`}>
-          {project.stack.map((item) => (
-            <span key={item}>{item}</span>
+      </div>
+      <div className="project-peek" aria-hidden="true">
+        <p className="project-peek__summary">{project.summary}</p>
+        <ul>
+          {project.built.slice(0, 3).map((item) => (
+            <li key={item}>{item}</li>
           ))}
-        </div>
-        <div className="project-footer">
-          <p>{project.impact}</p>
+        </ul>
+        <span className="project-peek__cue">
+          Click for images and the full write-up
+          <ArrowUpRight size={14} />
+        </span>
+      </div>
+    </a>
+  );
+}
+
+function ProjectTableBlock({ table }: { table: ProjectTable }) {
+  return (
+    <div className="project-table-wrap">
+      <div className="project-table-scroll">
+        <table className="project-table">
+          <thead>
+            <tr>
+              {table.head.map((cell) => (
+                <th key={cell} scope="col">{cell}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {table.rows.map((row) => (
+              <tr key={row.join("|")}>
+                {row.map((cell, index) => (index === 0 ? <th key={cell} scope="row">{cell}</th> : <td key={`${cell}-${index}`}>{cell}</td>))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {table.note && <p className="project-table-note">{table.note}</p>}
+    </div>
+  );
+}
+
+function projectSections(project: Project): { lead: string[]; stats?: { value: string; label: string }[]; sections: ProjectSection[] } {
+  if (project.detail) return project.detail;
+  return {
+    lead: [project.summary],
+    sections: [
+      { title: "The problem", body: [project.problem] },
+      { title: "What I built", bullets: project.built },
+      ...(project.media && project.media.length > 0
+        ? [{ title: project.mediaLabel ?? "From the repository", media: project.media }]
+        : []),
+      { title: "Outcome", body: [project.impact] }
+    ]
+  };
+}
+
+function ProjectPage({ project }: { project: Project | undefined }) {
+  const goBack = (event: React.MouseEvent) => {
+    if (navigation.cameFromPortfolio) {
+      event.preventDefault();
+      navigation.cameFromPortfolio = false;
+      window.history.back();
+    }
+  };
+
+  if (!project) {
+    return (
+      <section className="section project-missing">
+        <h1>Project not found.</h1>
+        <p>That link does not match a project on this site.</p>
+        <LinkButton href="#work">All projects</LinkButton>
+      </section>
+    );
+  }
+
+  const { lead, stats, sections } = projectSections(project);
+  const index = projects.findIndex((item) => item.slug === project.slug);
+  const previous = projects[(index - 1 + projects.length) % projects.length];
+  const next = projects[(index + 1) % projects.length];
+
+  return (
+    <>
+      <section className={`project-hero accent-${project.accent}`}>
+        <div className="project-hero__copy">
+          <a className="back-link" href="#work" onClick={goBack}>
+            <ArrowLeft size={16} aria-hidden="true" />
+            All projects
+          </a>
+          <div className="project-eyebrow-row">
+            <p className="eyebrow">{project.eyebrow}</p>
+            {project.status && (
+              <span className="status-pill">
+                <span className="status-dot" aria-hidden="true" />
+                {project.status}
+              </span>
+            )}
+          </div>
+          <h1>{project.title}</h1>
+          {lead.map((paragraph) => (
+            <p className="project-lead" key={paragraph}>{paragraph}</p>
+          ))}
+          <div className="stack-list" aria-label={`${project.title} stack`}>
+            {project.stack.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
           {project.link && (
-            <a href={project.link.href} className="text-link" target="_blank" rel="noreferrer">
-              {project.link.label}
-              <ArrowUpRight size={16} aria-hidden="true" />
-            </a>
+            <div className="hero-actions">
+              <LinkButton href={project.link.href}>
+                <Github size={17} />
+                {project.link.label}
+              </LinkButton>
+            </div>
           )}
         </div>
-      </div>
-    </details>
+        <div className="project-hero__art">
+          <ProjectArtwork visual={project.visual} />
+        </div>
+      </section>
+
+      {stats && stats.length > 0 && (
+        <section className="project-stats" aria-label={`${project.title} key facts`}>
+          {stats.map((stat) => (
+            <div key={stat.label}>
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {sections.map((section) => (
+        <section className="section project-section" key={section.title}>
+          <div className="project-section__head">
+            <h2>{section.title}</h2>
+          </div>
+          <div className="project-section__body">
+            {section.body?.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+            {section.bullets && (
+              <ul>
+                {section.bullets.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            )}
+            {section.table && <ProjectTableBlock table={section.table} />}
+            {section.media && section.media.length > 0 && (
+              <div className="project-media-grid">
+                {section.media.map((item) => (
+                  <ProjectMediaItem key={item.src} item={item} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      ))}
+
+      <nav className="section project-pager" aria-label="More projects">
+        <a href={`#project/${previous.slug}`}>
+          <span><ArrowLeft size={14} aria-hidden="true" /> Previous</span>
+          <strong>{previous.title}</strong>
+        </a>
+        <a href={`#project/${next.slug}`}>
+          <span>Next <ArrowUpRight size={14} aria-hidden="true" /></span>
+          <strong>{next.title}</strong>
+        </a>
+      </nav>
+
+      <ContactSection />
+    </>
   );
 }
 
@@ -497,23 +632,20 @@ function WorkstreamsSection() {
 }
 
 function PortfolioPage({ onOpenThesis }: { onOpenThesis: () => void }) {
-  const [openProjectTitle, setOpenProjectTitle] = useState<string | null>(null);
-  const [category, setCategory] = useState("All work");
-  const [query, setQuery] = useState("");
+  const [category, setCategoryState] = useState(workFilters.category);
+  const [query, setQueryState] = useState(workFilters.query);
+  const setCategory = (value: string) => {
+    workFilters.category = value;
+    setCategoryState(value);
+  };
+  const setQuery = (value: string) => {
+    workFilters.query = value;
+    setQueryState(value);
+  };
   const displayedProjects = projects.filter((project) =>
     (category === "All work" || project.category === category) &&
     [project.title, project.eyebrow, project.short, ...project.stack].join(" ").toLowerCase().includes(query.trim().toLowerCase())
   );
-  const featuredProjectTitles = new Set(projects.slice(0, 3).map((project) => project.title));
-
-  useEffect(() => {
-    if (!openProjectTitle) return;
-    const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpenProjectTitle(null);
-    };
-    document.addEventListener("keydown", close);
-    return () => document.removeEventListener("keydown", close);
-  }, [openProjectTitle]);
 
   return (
     <>
@@ -578,24 +710,15 @@ function PortfolioPage({ onOpenThesis }: { onOpenThesis: () => void }) {
         </div>
         <div className="work-toolbar">
           <div className="project-filters" role="group" aria-label="Filter projects">
-            {projectCategories.map((item) => <button type="button" key={item} aria-pressed={category === item} onClick={() => { setCategory(item); setOpenProjectTitle(null); }}>{item}</button>)}
+            {projectCategories.map((item) => <button type="button" key={item} aria-pressed={category === item} onClick={() => setCategory(item)}>{item}</button>)}
           </div>
-          <div className="project-search"><Search size={17} aria-hidden="true" /><input type="search" aria-label="Search projects" placeholder="Search projects or tools" value={query} onChange={(event) => { setQuery(event.target.value); setOpenProjectTitle(null); }} />{query && <button type="button" aria-label="Clear search" onClick={() => setQuery("")}><X size={16} /></button>}</div>
+          <div className="project-search"><Search size={17} aria-hidden="true" /><input type="search" aria-label="Search projects" placeholder="Search projects or tools" value={query} onChange={(event) => setQuery(event.target.value)} />{query && <button type="button" aria-label="Clear search" onClick={() => setQuery("")}><X size={16} /></button>}</div>
         </div>
         <p className="work-count" role="status">{displayedProjects.length} {displayedProjects.length === 1 ? "project" : "projects"}</p>
         {displayedProjects.length === 0 && <div className="empty-state"><h3>No matching projects.</h3><p>Try a different subject or tool, or browse the full collection.</p><button className="link-button ghost" type="button" onClick={() => { setQuery(""); setCategory("All work"); }}>Reset filters</button></div>}
         <div className="featured-grid work-grid">
-          {displayedProjects.map((project, index) => (
-            <ProjectCard
-              key={project.title}
-              project={project}
-              featured={featuredProjectTitles.has(project.title)}
-              side={index % 2 === 0 ? "right" : "left"}
-              isOpen={openProjectTitle === project.title}
-              onToggle={() =>
-                setOpenProjectTitle((current) => (current === project.title ? null : project.title))
-              }
-            />
+          {displayedProjects.map((project) => (
+            <ProjectCard key={project.slug} project={project} />
           ))}
         </div>
       </section>
@@ -744,26 +867,51 @@ function ThesisPage() {
   );
 }
 
+type Route = { view: View; slug?: string };
+
+const readRoute = (): Route => {
+  const hash = window.location.hash;
+  if (hash.startsWith("#thesis")) return { view: "thesis" };
+  if (hash.startsWith("#project/")) return { view: "project", slug: decodeURIComponent(hash.slice("#project/".length)) };
+  return { view: "portfolio" };
+};
+
 export default function App() {
-  const [activeView, setActiveView] = useState<View>(() => window.location.hash.startsWith("#thesis") ? "thesis" : "portfolio");
+  const [route, setRoute] = useState<Route>(readRoute);
+  const previousView = useRef<View>(route.view);
+  const activeView = route.view;
+  const project = route.slug ? projects.find((item) => item.slug === route.slug) : undefined;
   useEffect(() => {
-    const syncView = () => {
-      setActiveView(window.location.hash.startsWith("#thesis") ? "thesis" : "portfolio");
-    };
+    const syncView = () => setRoute(readRoute());
     window.addEventListener("hashchange", syncView);
     return () => window.removeEventListener("hashchange", syncView);
   }, []);
   useEffect(() => {
-    document.title = activeView === "thesis" ? "Quantum thermodynamics thesis | Alexander Belik" : "Alexander Belik | Theoretical Physics & Scientific Computing";
-    const target = document.getElementById(window.location.hash.slice(1));
-    if (target) target.scrollIntoView({ behavior: "instant" });
-  }, [activeView]);
-  const navItems = activeView === "portfolio" ? portfolioNavItems : thesisNavItems;
+    document.title =
+      activeView === "thesis"
+        ? "Quantum thermodynamics thesis | Alexander Belik"
+        : activeView === "project" && project
+          ? `${project.title} | Alexander Belik`
+          : "Alexander Belik | Theoretical Physics & Scientific Computing";
+    const leftProject = previousView.current === "project" && activeView === "portfolio";
+    previousView.current = activeView;
+    if (activeView === "project") {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    } else if (leftProject && navigation.portfolioScroll > 0) {
+      window.scrollTo({ top: navigation.portfolioScroll, behavior: "instant" });
+    } else {
+      const target = document.getElementById(window.location.hash.slice(1));
+      if (target) target.scrollIntoView({ behavior: "instant" });
+    }
+  }, [activeView, project]);
+  const navItems = activeView === "thesis" ? thesisNavItems : portfolioNavItems;
   const openView = (view: View) => {
+    navigation.cameFromPortfolio = false;
     window.location.hash = view === "thesis" ? "thesis-overview" : "top";
-    setActiveView(view);
+    setRoute({ view });
     window.scrollTo({ top: 0, behavior: "instant" });
   };
+  const switchView: "portfolio" | "thesis" = activeView === "thesis" ? "thesis" : "portfolio";
 
   return (
     <div className="site-shell">
@@ -774,20 +922,20 @@ export default function App() {
           AB
         </button>
         <nav aria-label="Primary navigation">
-          <div className={`view-switch ${activeView}`} role="group" aria-label="Site view">
+          <div className={`view-switch ${switchView}`} role="group" aria-label="Site view">
             <span className="view-switch-thumb" aria-hidden="true" />
             <button
               type="button"
-              className={activeView === "portfolio" ? "active" : ""}
-              aria-pressed={activeView === "portfolio"}
+              className={switchView === "portfolio" ? "active" : ""}
+              aria-pressed={switchView === "portfolio"}
               onClick={() => openView("portfolio")}
             >
               Portfolio
             </button>
             <button
               type="button"
-              className={activeView === "thesis" ? "active" : ""}
-              aria-pressed={activeView === "thesis"}
+              className={switchView === "thesis" ? "active" : ""}
+              aria-pressed={switchView === "thesis"}
               onClick={() => openView("thesis")}
             >
               Thesis
@@ -804,11 +952,9 @@ export default function App() {
       </header>
 
       <main id="top"><span id={activeView === "thesis" ? "thesis-main-content" : "main-content"} tabIndex={-1} />
-        {activeView === "portfolio" ? (
-          <PortfolioPage onOpenThesis={() => openView("thesis")} />
-        ) : (
-          <ThesisPage />
-        )}
+        {activeView === "portfolio" && <PortfolioPage onOpenThesis={() => openView("thesis")} />}
+        {activeView === "project" && <ProjectPage project={project} />}
+        {activeView === "thesis" && <ThesisPage />}
       </main>
 
       <footer className="site-footer">

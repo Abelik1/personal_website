@@ -5,7 +5,28 @@ export type ProjectMedia = {
   caption: string;
 };
 
+export type ProjectTable = {
+  head: string[];
+  rows: string[][];
+  note?: string;
+};
+
+export type ProjectSection = {
+  title: string;
+  body?: string[];
+  bullets?: string[];
+  table?: ProjectTable;
+  media?: ProjectMedia[];
+};
+
+export type ProjectDetail = {
+  lead: string[];
+  stats?: { value: string; label: string }[];
+  sections: ProjectSection[];
+};
+
 export type Project = {
+  slug: string;
   title: string;
   category: "Software & AI" | "Scientific computing" | "Research";
   eyebrow: string;
@@ -30,11 +51,17 @@ export type Project = {
     | "chemistry"
     | "home"
     | "workspace";
+  detail?: ProjectDetail;
   link?: {
     label: string;
     href: string;
   };
 };
+
+type ProjectInput = Omit<Project, "slug"> & { slug?: string };
+
+const slugify = (title: string) =>
+  title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
 export type HeroDemo = {
   name: string;
@@ -114,7 +141,7 @@ export const identityChips = [
   "Research platforms"
 ];
 
-export const projects: Project[] = [
+const projectInputs: ProjectInput[] = [
   {
     title: "Inhabis",
     eyebrow: "Home platform",
@@ -127,16 +154,97 @@ export const projects: Project[] = [
       "A home can be full of capable devices whose intelligence is fragmented. One system knows the solar output, another the car, another the heating, and none of them holds the household's priorities, so an ordinary goal like using up spare solar power is not a command any single device can take.",
     built: [
       "TypeScript server with separated layers for operational state, derived planning context, and constrained planning",
-      "Embedded Matter controller plus an Android companion that performs BLE and Thread onboarding away from the host",
+      "Embedded Matter controller with one persistent fabric per home, plus an Android companion that does BLE and Thread onboarding next to the device while the server finishes commissioning over the LAN",
       "Energy work spanning solar-surplus EV charging, solar production forecasting, and a learned room thermal predictor",
-      "React dashboard over devices, energy, the world model, learning, and a whole-home simulator"
+      "Pilot Home: a fictional two-storey house that runs the real physics and planning against simulated devices, with weather, energy, goals, and expiring approvals",
+      "Customer dashboard (Home, Rooms, Intelligence, History) over a furnished 3D house, and a Workbench view for the model, learning, and simulator tools",
+      "Native Android household preview and an optional spatial beta that records room walkthroughs, replays them with controlled noise, and proposes reviewed device candidates"
     ],
     stack: ["TypeScript", "Node.js", "React", "Python", "Matter / Thread", "Kotlin"],
     impact:
       "Automation that earns trust in steps: no model, forecast, or dashboard is the final safety authority, and every action is checked against policy and verified afterwards.",
     accent: "cyan",
     category: "Software & AI",
-    visual: "home"
+    visual: "home",
+    detail: {
+      lead: [
+        "Inhabis treats a house as one system. It keeps a current, explainable picture of rooms, devices, sensors, and availability, says so when information is missing or stale, and only acts inside the authority the household has granted.",
+        "It is an active engineering system. The pilot work is about getting a first household to use it safely, so most of what you see here runs against a fictional home called Willow House."
+      ],
+      stats: [
+        { value: "Matter + Thread", label: "Direct onboarding with an Android companion" },
+        { value: "8 rooms, 16 devices", label: "The fictional Pilot Home" },
+        { value: "Fail-closed", label: "Stale, unauthorised, or ambiguous actions are rejected and logged" }
+      ],
+      sections: [
+        {
+          title: "The problem",
+          body: [
+            "One system knows whether solar power is available, another the state of the car, another the heating, another the room conditions. None of them has a reliable view of the household's priorities.",
+            "Goals like use spare solar power, keep the house comfortable, or have the car ready this evening are household outcomes. Achieving them takes observation, coordination, trade-offs, and follow-up across several ecosystems."
+          ],
+          media: [
+            { kind: "image", src: "/media/inhabis/problem.webp", caption: "One home, many moving targets: solar production, dynamic tariffs, storage, export, and flexible loads all compete for the same energy." }
+          ]
+        },
+        {
+          title: "What the system does",
+          bullets: [
+            "Observe the home and know when its information is incomplete or stale",
+            "Understand devices through a small, consistent set of capabilities, leaving anything ambiguous unsupported",
+            "Coordinate solar, battery, vehicle charging, and flexible appliances under one household plan",
+            "Decide against explicit constraints, preferences, and uncertainty, keeping doing nothing as a valid outcome",
+            "Act only within granted authority, with manual control always winning",
+            "Verify what actually happened after every action",
+            "Learn from outcomes, approvals, rejections, and manual corrections"
+          ]
+        },
+        {
+          title: "Try a fictional home",
+          body: [
+            "The Pilot Home simulator is a complete two-storey UK house with smart and unconnected devices, evolving weather, temperature, and energy, goals, approvals, manual overrides, and failure scenarios. It runs the real Python physics and planning with simulated endpoints and never loads a physical adapter.",
+            "The customer interface has four places: Home, Rooms, Intelligence, and History, around a shared furnished 3D house. Workbench is the advanced workspace for the world model and simulator."
+          ],
+          media: [
+            { kind: "image", src: "/media/inhabis/home-desktop.webp", caption: "My Home in the Grove appearance: a summary of the house, the weather, and the current comfort and energy view." },
+            { kind: "image", src: "/media/inhabis/recurring-permission.webp", caption: "Recurring permissions: the household approves a temperature range for a time window, and the approval expires." },
+            { kind: "image", src: "/media/inhabis/energy-day.webp", caption: "A simulated day of household energy: solar, baseline load, heat pump, EV charging, battery, and grid import and export." },
+            { kind: "image", src: "/media/inhabis/home-mobile.webp", caption: "The same home at phone width." }
+          ]
+        },
+        {
+          title: "On the phone",
+          body: [
+            "Matter devices on Thread, or far from the server, are onboarded by an Android companion. The phone talks BLE and Thread next to the device, asks for the preferred Thread network with explicit system consent, and Inhabis completes commissioning to its own fabric over the LAN. The Thread operational dataset is never stored or sent to the host.",
+            "A native household preview shows rooms and devices read-only. An optional spatial beta scans rooms, replays recorded walkthroughs with controlled noise, and starts a rough house draft that a person reviews before anything is placed."
+          ],
+          media: [
+            { kind: "image", src: "/media/inhabis/android-home.webp", caption: "Android household preview with offline example readings and no device control." },
+            { kind: "image", src: "/media/inhabis/android-rooms.webp", caption: "Rooms and their devices, with stale or unavailable readings called out." }
+          ]
+        },
+        {
+          title: "Trust promises",
+          bullets: [
+            "Local first: core home information, policy, decisions, and logs stay local by default",
+            "Household authority: the owner decides who may change configuration and which experiments may issue real commands",
+            "No hidden control: language models and forecasts can propose, and deterministic checks decide what is admissible",
+            "Visible uncertainty: predictions state their quality and limits",
+            "Accountability: the goal, conditions, options, decision, safety result, action, observed outcome, and any override are recorded"
+          ]
+        },
+        {
+          title: "Where it stands",
+          body: [
+            "Direct Matter is the primary path for new compatible devices, with Homey kept as a migration-era integration. The energy and thermal features are experiments tied to a specific home and evidence set, and predictions are advisory.",
+            "The natural-language goal intake is a review-only prototype: it can produce suggestions and cannot dispatch an action from a vague request. Locks, alarms, and garage doors are out of scope for now."
+          ],
+          media: [
+            { kind: "image", src: "/media/inhabis/concept-cutaway.webp", caption: "Concept artwork of the product direction, an illustration and not a product screenshot." }
+          ]
+        }
+      ]
+    }
   },
   {
     title: "ORION",
@@ -198,110 +306,111 @@ export const projects: Project[] = [
     visual: "workspace"
   },
   {
-    title: "Leonardo Visual Demos",
+    title: "EuroHPC Demo Lab",
     eyebrow: "HPC and GPU simulation",
     short:
-      "Thirteen GPU-accelerated physics demonstrations that run headlessly on the Leonardo supercomputer and replay through a browser viewer.",
+      "Fourteen GPU physics and AI demonstrations for the EuroHPC Demo Lab 2026, rendered on Leonardo and Discoverer and replayed on a public stand.",
     summary:
-      "A portable gallery of thirteen visual high-performance computing demonstrations for public engagement. Each demo separates headless scientific computation from presentation: the solver writes numbered frames and metadata, while a lightweight web viewer handles playback, controls, readouts, and saved runs.",
+      "A gallery of visual high-performance computing demonstrations for public engagement. Each demo separates headless computation from presentation: the solver writes numbered frames and metadata, and a lightweight web viewer handles playback, controls, readouts, and saved runs. Large showcase renders are made ahead of time on Brain++ Discoverer GB200 nodes, on Leonardo A100 nodes, and on a CUDA desktop, and the stand replays them when nobody is at the controls.",
     problem:
       "Live scientific demonstrations tend to fail at the venue. They assume a graphics context, a fast link to the cluster, and a solver that finishes on cue, and a batch queue on a supercomputer guarantees none of those.",
     built: [
-      "Thirteen solvers spanning lattice-Boltzmann flow, particle-mesh cosmology, N-body galaxy collisions, reaction-diffusion, plasma control, and molecular dynamics",
+      "Fourteen solvers spanning lattice-Boltzmann flow, particle-mesh cosmology, direct N-body gravity, black-hole lensing, reaction-diffusion, plasma control, molecular dynamics, and two evolving-AI games",
       "One demo contract that runs on NumPy, CuPy/CUDA, or a hybrid pipeline overlapping GPU solving with CPU frame encoding",
-      "SLURM job templates for the CPU and A100 Booster partitions, with preflight, submission, and sync scripts",
-      "Browser viewer with interactive scientific controls, deep-zoom tiles, and replay of previously computed runs"
+      "SLURM job templates for Leonardo's CPU and A100 Booster partitions and for Discoverer's GB200 nodes, with preflight, submission, and sync scripts",
+      "A walk-up stand viewer with a Discoverer lineup and a Leonardo lineup, run bundles that move saved runs between machines, and a front end for the team's MUrB N-body code"
     ],
     stack: ["Python", "CuPy / CUDA", "PyTorch", "NumPy", "SLURM", "JavaScript"],
     impact:
-      "Exhibition-grade demonstrations that stay inspectable: the same run reproduces on a laptop, a CUDA desktop, or a Leonardo node, and a partially finished job is already usable.",
-    mediaLabel: "Demo captures from the repository",
-    media: [
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/black_hole.mp4",
-        "poster": "/media/hpc-demos/black_hole.jpg",
-        "caption": "Black-hole lensing: image-space gravitational lensing with a numerical 3D photon-path view."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/pbh.mp4",
-        "poster": "/media/hpc-demos/pbh.jpg",
-        "caption": "Primordial black-hole threshold: a reduced radial model at the boundary between collapse and dispersion."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/fluid.mp4",
-        "poster": "/media/hpc-demos/fluid.jpg",
-        "caption": "Virtual wind tunnel: D2Q9 lattice-Boltzmann flow with advected streaklines and configurable obstacles."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/cosmic_web.mp4",
-        "poster": "/media/hpc-demos/cosmic_web.jpg",
-        "caption": "Cosmic-web formation: particle-mesh gravity with expanding space and gas-composition comparisons."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/galaxy_collision.mp4",
-        "poster": "/media/hpc-demos/galaxy_collision.jpg",
-        "caption": "Milky Way and Andromeda: restricted N-body evolution using physical mass and encounter parameters."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/galaxy_collision_3d.mp4",
-        "poster": "/media/hpc-demos/galaxy_collision_3d.jpg",
-        "caption": "Full 3D galaxy collision: direct softened all-pairs gravity over disc, bulge, and halo particles."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/reaction_diffusion.mp4",
-        "poster": "/media/hpc-demos/reaction_diffusion.jpg",
-        "caption": "Living mathematics: Gray-Scott reaction-diffusion evolving from a seed into an emergent pattern."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/crystal.mp4",
-        "poster": "/media/hpc-demos/crystal.jpg",
-        "caption": "Crystal growth: recursive anisotropic growth with multiple habits and deep zoom."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/neural_wall.mp4",
-        "poster": "/media/hpc-demos/neural_wall.jpg",
-        "caption": "Neural-network wall: a batched coordinate-network training workload revealing many networks at once."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/fusion_plasma.mp4",
-        "poster": "/media/hpc-demos/fusion_plasma.jpg",
-        "caption": "Star in a Bottle: a reduced nonlinear plasma-wave lattice projected onto a rotatable tokamak torus."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/plasma_guardian.mp4",
-        "poster": "/media/hpc-demos/plasma_guardian.jpg",
-        "caption": "AI Plasma Guardian: a trainable neural controller learning to suppress a plasma instability."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/weather_ensemble.mp4",
-        "poster": "/media/hpc-demos/weather_ensemble.jpg",
-        "caption": "Storm Factory: a barotropic-vorticity atmosphere turning small initial uncertainty into diverging forecasts."
-      },
-      {
-        "kind": "video",
-        "src": "/media/hpc-demos/molecular_dynamics.mp4",
-        "poster": "/media/hpc-demos/molecular_dynamics.jpg",
-        "caption": "Molecular Machine: coarse-grained 3D molecular dynamics with all-pairs interactions and ensemble comparisons."
-      }
-    ],
+      "Exhibition-grade demonstrations that stay inspectable: the same run reproduces on a laptop, a CUDA desktop, or a cluster node, and a partially finished job is already usable.",
     accent: "cyan",
     category: "Scientific computing",
     visual: "hpc",
     link: {
       label: "View on GitHub",
       href: "https://github.com/Abelik1/HPC_Visual_Demos"
+    },
+    detail: {
+      lead: [
+        "The Demo Lab needed physics that a visitor can poke at, produced by machines that live in another country. The answer was to make every demo a headless solver that writes frames, and to make the stand a viewer that plays them back with controls on top.",
+        "Showcase runs were rendered on Discoverer's GB200 nodes, on Leonardo's A100 Booster partition, and on a CUDA desktop. Anything a visitor starts live runs on the CPU at a local preset."
+      ],
+      stats: [
+        { value: "2,000,000", label: "Particles in the 3D Milky Way and Andromeda collision, on a GB200" },
+        { value: "5120 × 2880", label: "Lattice, 170,000 steps, in the wind tunnel run" },
+        { value: "14.7 million", label: "Exact photon orbits per frame in the black-hole render" },
+        { value: "93.8%", label: "Four-A100 parallel efficiency at 500,000 bodies (MUrB)" }
+      ],
+      sections: [
+        {
+          title: "On the stand",
+          body: [
+            "There are two demo days, and the walk-up viewer shows the lineup of whichever is active. The Discoverer lineup is the 3D galaxy collision, the wind tunnel, Neuro-Racers, the black hole, and the Molecular Machine. The Leonardo lineup is MUrB N-body, Star in a Bottle, the cosmic web, and Bat vs Moth, alongside pre-rendered films from teammates.",
+            "The viewer has large controls, prints the explanation under the picture, and keeps every advanced setting behind one presenter panel."
+          ],
+          media: [
+            { kind: "video", src: "/media/hpc-demos/galaxy_collision_3d.mp4", poster: "/media/hpc-demos/galaxy_collision_3d.jpg", caption: "Milky Way meets Andromeda in full 3D gravity: direct softened all-pairs forces, seeded from Gaia DR3 and PHAT data, illustrative and not a fitted prediction." },
+            { kind: "video", src: "/media/hpc-demos/fluid.mp4", poster: "/media/hpc-demos/fluid.jpg", caption: "Virtual wind tunnel: a D2Q9 lattice-Boltzmann flow past an obstacle with advected streaklines. Visitors draw their own obstacle." },
+            { kind: "video", src: "/media/hpc-demos/black_hole.mp4", poster: "/media/hpc-demos/black_hole.jpg", caption: "A camera beside a black hole found by Gaia, looking at 1.8 million real Gaia stars through exact photon orbits." },
+            { kind: "video", src: "/media/hpc-demos/molecular_dynamics.mp4", poster: "/media/hpc-demos/molecular_dynamics.jpg", caption: "Molecular Machine: coarse-grained 3D molecular dynamics with all-pairs interactions and ensemble comparisons." }
+          ]
+        },
+        {
+          title: "Evolving AI, with nobody programming the behaviour",
+          body: [
+            "Two demos let visitors design a brain and watch selection do the rest. In Neuro-Racers, visitors build a car brain from blocks, thousands of cars share it with different random weights, and the best drivers of each generation become the parents of the next. In Bat vs Moth, one visitor builds a sonar-hunting bat and another a moth that learns to jam it, and the two co-evolve in a dark cave."
+          ],
+          media: [
+            { kind: "video", src: "/media/hpc-demos/neuro_racers.mp4", poster: "/media/hpc-demos/neuro_racers.jpg", caption: "Neuro-Racers: 4,096 cars over 150 generations on the Grand Prix track, computed on a desktop RTX 3060 Ti." },
+            { kind: "video", src: "/media/hpc-demos/bat_vs_moth.mp4", poster: "/media/hpc-demos/bat_vs_moth.jpg", caption: "Bat vs Moth: a population of 8,192 over 300 generations, with jamming evolving at generation 131." }
+          ]
+        },
+        {
+          title: "Star in a Bottle",
+          body: [
+            "A fusion plasma held by magnetic fields inside a torus-shaped vessel, modelled as a nonlinear plasma-wave lattice projected onto a rotatable tokamak. Passive confinement advects tracers through the drift the field produces. In the AI plasma guardian mode a neural policy trained shot by shot controls the coils and sparks the markers it fails to hold off the wall.",
+            "On a Discoverer GB200 the passive run took 24,000 lattice steps with 6,000 tracers, and the guardian trained across 12 shots with 16 parallel plasmas."
+          ],
+          media: [
+            { kind: "video", src: "/media/hpc-demos/fusion_plasma.mp4", poster: "/media/hpc-demos/fusion_plasma.jpg", caption: "Passive confinement: tracers follow the drift the field produces." },
+            { kind: "video", src: "/media/hpc-demos/plasma_guardian.mp4", poster: "/media/hpc-demos/plasma_guardian.jpg", caption: "AI plasma guardian: a trainable neural controller learning to suppress a plasma instability." }
+          ]
+        },
+        {
+          title: "MUrB N-body on Leonardo",
+          body: [
+            "The Leonardo lineup includes MUrB, a gravitational N-body code from Sorbonne University and LIP6 that a team extended from a CPU reference to one A100 and to four A100s over MPI. The solver and its benchmark suite live in the team's NBody-EuroHPC repository. My part is the front end in the gallery: it runs the real executable, reads the trajectory it records, and renders it the way MUrB's own OpenGL viewer does.",
+            "The measurements below come from that repository's Leonardo benchmark campaign: FP32, five repetitions per point, median time per iteration, 0 failed records in 190. The four-GPU backend runs four MPI ranks on four A100s inside a single Booster node."
+          ],
+          table: {
+            head: ["Bodies", "CPU OpenMP (ms/iter)", "1× A100", "4× A100", "4 vs 1 GPU"],
+            rows: [
+              ["10,000", "2.24", "1.58", "1.77", "0.89×"],
+              ["100,000", "219.2", "15.36", "16.08", "0.96×"],
+              ["200,000", "1,020.8", "56.30", "31.71", "1.78×"],
+              ["500,000", "6,722", "280.1", "74.66", "3.75×"]
+            ],
+            note: "Small problems do not repay the MPI synchronisation and host staging of the four-GPU path. The crossover sits between 100,000 and 200,000 bodies, and at 500,000 the four A100s reach about 67 estimated TFLOP/s against 0.74 for the CPU backend. GFLOP/s figures come from an analytical 20 flops per interaction model, not hardware counters."
+          },
+          media: [
+            { kind: "video", src: "/media/eurohpc/murb-nbody.mp4", poster: "/media/eurohpc/murb-nbody.jpg", caption: "A MUrB galaxy initial condition, replayed from a recorded trajectory." }
+          ]
+        },
+        {
+          title: "Where each run was made",
+          table: {
+            head: ["Demo", "Machine", "Scale"],
+            rows: [
+              ["3D galaxy collision", "Discoverer GB200", "2,000,000 particles, 8 billion years"],
+              ["Wind tunnel", "Discoverer GB200", "5120 × 2880 lattice, 170,000 steps"],
+              ["Star in a Bottle", "Discoverer GB200", "24,000 steps, 6,000 tracers; 12 guardian shots"],
+              ["Cosmic web", "Desktop RTX 3060 Ti", "10.5 million particles on a 2048² mesh"],
+              ["Neural image compression", "Desktop RTX 3060 Ti", "64 networks trained at once on the Hubble Deep Field"],
+              ["Black hole", "Desktop CPU", "2560 × 1440, 2× supersampled"]
+            ]
+          }
+        }
+      ]
     }
   },
   {
@@ -509,6 +618,11 @@ export const projects: Project[] = [
   }
 ];
 
+export const projects: Project[] = projectInputs.map((project) => ({
+  ...project,
+  slug: project.slug ?? slugify(project.title)
+}));
+
 export const experiences: Experience[] = [
   {
     period: "May 2026 - Sep 2026",
@@ -518,7 +632,7 @@ export const experiences: Experience[] = [
     place: "Trinity College Dublin",
     details: [
       "Built a digital lab notebook platform storing experimental measurements as structured, auditable records.",
-      "Developed GPU-accelerated physics demonstrations that run headlessly on the Leonardo EuroHPC system."
+      "Developed GPU-accelerated physics demonstrations that run headlessly on the Leonardo EuroHPC system and on Brain++ Discoverer GB200 nodes, for the EuroHPC Demo Lab 2026."
     ]
   },
   {
@@ -639,7 +753,7 @@ export const workstreams: Workstream[] = [
     area: "HPC and visualisation",
     title: "Supercomputer demonstrations",
     description:
-      "Thirteen physics solvers behind one compute contract that spans NumPy, CUDA, and SLURM batch jobs on Leonardo."
+      "Fourteen physics and AI demos behind one compute contract that spans NumPy, CUDA, and SLURM batch jobs on Leonardo and Discoverer."
   },
   {
     area: "Research platforms",

@@ -7,7 +7,7 @@ Guidance for Claude Code working in this repository.
 Alexander Belik's personal site. Vite, React 19, TypeScript, no framework beyond that.
 
 - `src/content.ts` holds profile facts, project data, education, experience, research copy, and document URLs. Keep factual changes here; interface labels live in components.
-- `src/App.tsx` renders portfolio and thesis views. Thesis anchors use a `#thesis-` prefix so direct links, refresh, and browser history retain the correct view.
+- `src/App.tsx` renders portfolio, project and thesis views. Thesis anchors use a `#thesis-` prefix and project pages use `#project/<slug>`, so direct links, refresh, and browser history retain the correct view. Project cards are links: hover reveals a peek panel and agitates the background particles (through `src/fieldBus.ts`), click opens the page. Rich project pages come from `projects[].detail` in content.
 - `src/ProjectArtwork.tsx` maps `projects[].visual` to local SVG concept illustrations. These are labelled concept studies, not product screenshots or measured data.
 - `src/styles.css` is plain CSS with tokens on `:root`. The project grid is two columns on desktop and one on narrow screens. Skill, note, and education grids have responsive layouts.
 - `src/ExperienceTimeline.tsx` preserves the animated branching timeline, ordered by start date. Card heights are measured and spaced automatically. On mobile the spine moves to the left; branches and colours remain. Add experience entries in content.

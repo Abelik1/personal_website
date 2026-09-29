@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { fieldBus } from "./fieldBus";
 
 type Particle = {
   x: number;
@@ -46,6 +47,10 @@ export function FluidField() {
     let height = 0;
     let animationFrame = 0;
     let lastFrame = 0;
+    // Eased 0..1 restlessness around the hovered project card, plus the last box it covered.
+    let agitation = 0;
+    let halo: { x0: number; y0: number; x1: number; y1: number; hue: number } | null = null;
+    const HALO_PAD = 110;
 
     const resetParticle = (particle: Particle, scatter = true) => {
       particle.x = scatter ? Math.random() * width : pointer.x;
@@ -129,6 +134,42 @@ export function FluidField() {
 
       const pointerFresh = pointer.active && time - pointer.lastMove < 900;
 
+      const hovered = fieldBus.agitation;
+      if (hovered) {
+        const rect = hovered.el.getBoundingClientRect();
+        halo = {
+          x0: rect.left - HALO_PAD,
+          y0: rect.top - HALO_PAD,
+          x1: rect.right + HALO_PAD,
+          y1: rect.bottom + HALO_PAD,
+          hue: hovered.hue
+        };
+        agitation += (1 - agitation) * 0.12;
+        // Throw sparks off the card's edge so the buzz is visible around its border.
+        const sparks = Math.round(7 * agitation);
+        for (let i = 0; i < sparks; i++) {
+          const spark = particles[(Math.random() * particles.length) | 0];
+          const along = Math.random() * 2 * (rect.width + rect.height);
+          let sx = rect.left;
+          let sy = rect.top;
+          if (along < rect.width) sx += along;
+          else if (along < rect.width + rect.height) { sx = rect.right; sy += along - rect.width; }
+          else if (along < 2 * rect.width + rect.height) { sx = rect.right - (along - rect.width - rect.height); sy = rect.bottom; }
+          else sy = rect.bottom - (along - 2 * rect.width - rect.height);
+          spark.x = spark.px = sx;
+          spark.y = spark.py = sy;
+          spark.vx = (Math.random() - 0.5) * 3;
+          spark.vy = (Math.random() - 0.5) * 3;
+          spark.life = 380;
+        }
+      } else {
+        agitation *= 0.9;
+        if (agitation < 0.02) {
+          agitation = 0;
+          halo = null;
+        }
+      }
+
       if (pointerFresh) {
         const glowRadius = 52.5;
         const glow = context.createRadialGradient(
@@ -170,8 +211,17 @@ export function FluidField() {
           }
         }
 
-        particle.vx *= 0.965;
-        particle.vy *= 0.965;
+        let excited = false;
+        if (halo && agitation > 0 && particle.x > halo.x0 && particle.x < halo.x1 && particle.y > halo.y0 && particle.y < halo.y1) {
+          // Vibrate: random kicks each frame, tinted with the project's accent.
+          particle.vx += (Math.random() - 0.5) * 2.2 * agitation;
+          particle.vy += (Math.random() - 0.5) * 2.2 * agitation;
+          particle.hue = halo.hue + Math.random() * 24;
+          excited = true;
+        }
+
+        particle.vx *= excited ? 0.9 : 0.965;
+        particle.vy *= excited ? 0.9 : 0.965;
         particle.x += (particle.vx + vector.x * 0.62) * BACKGROUND_SPEED;
         particle.y += (particle.vy + vector.y * 0.62) * BACKGROUND_SPEED;
         particle.life += BACKGROUND_SPEED;
@@ -187,7 +237,9 @@ export function FluidField() {
           continue;
         }
 
-        const alpha = Math.min(0.52, 0.09 + Math.hypot(particle.vx, particle.vy) * 0.14);
+        const alpha = excited
+          ? Math.min(0.85, 0.24 + Math.hypot(particle.vx, particle.vy) * 0.2)
+          : Math.min(0.52, 0.09 + Math.hypot(particle.vx, particle.vy) * 0.14);
         context.strokeStyle = `hsla(${particle.hue}, 92%, 68%, ${alpha})`;
         context.beginPath();
         context.moveTo(particle.px, particle.py);
@@ -203,6 +255,8 @@ export function FluidField() {
       reducedMotion = motionPreference.matches;
       lastFrame = 0;
       pointer.active = false;
+      agitation = 0;
+      halo = null;
       if (document.hidden) return;
       if (reducedMotion) drawStaticField();
       else animationFrame = requestAnimationFrame(draw);

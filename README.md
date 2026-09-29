@@ -26,9 +26,10 @@ Publish the contents of `dist/` to a static host. The current asset URLs assume 
 | File | Purpose |
 | --- | --- |
 | `src/content.ts` | Profile, education, experience, projects, categories, research text, and document URLs |
-| `src/App.tsx` | Portfolio and thesis views, project search/filtering, disclosure cards, navigation |
+| `src/App.tsx` | Portfolio, project and thesis views, project search/filtering, hover-reveal cards, project pages, navigation |
 | `src/ProjectArtwork.tsx` | Ten original SVG concept illustrations for the project previews |
-| `src/FluidField.tsx` | Full-page interactive vector-field simulation with pointer-driven particle swirls |
+| `src/FluidField.tsx` | Full-page interactive vector-field simulation with pointer-driven particle swirls and card-hover agitation |
+| `src/fieldBus.ts` | Tiny shared state that lets a hovered project card tell the particle field where to get restless |
 | `src/ExperienceTimeline.tsx` | Animated branching experience timeline with measured card spacing |
 | `src/styles.css` | Shared colours, type, components, responsive layouts, focus states |
 | `public/documents/` | The four published PDF downloads |
@@ -36,13 +37,13 @@ Publish the contents of `dist/` to a static host. The current asset URLs assume 
 | `scripts/build-cvs.mjs`, `scripts/build-cvs.py` | Rebuild the public CVs from the site's factual content |
 | `tests/portfolio.spec.ts` | Browser checks for discovery, navigation, documents, and responsive layouts |
 
-The main view uses `#work`, `#experience`, and `#contact`. Thesis links use `#thesis-overview`, `#thesis-explainer`, `#thesis-technical`, and `#thesis-contact`. Hash-based navigation works on static hosting and survives refresh, Back, and Forward.
+The main view uses `#work`, `#experience`, and `#contact`. Each project has a page at `#project/<slug>`, where the slug is the lower-cased title with dashes (`#project/inhabis`, `#project/eurohpc-demo-lab`). Thesis links use `#thesis-overview`, `#thesis-explainer`, `#thesis-technical`, and `#thesis-contact`. Hash-based navigation works on static hosting and survives refresh, Back, and Forward.
 
 ## Editing content and previews
 
-Update profile facts and project descriptions in `src/content.ts`. A project has a category, illustration key, summary, engineering details, stack, and optional public link. Only add verified public links. Projects without a public repository still expose their case-study details.
+Update profile facts and project descriptions in `src/content.ts`. A project has a category, illustration key, summary, engineering details, stack, and optional public link. An optional `detail` block (lead paragraphs, key-figure tiles, and sections with text, bullets, tables, images, and videos) fills the project page; projects without one get a page built from `summary`, `problem`, `built`, `media`, and `impact`. Put images and clips under `public/media/<project>/`, converting GIFs to H.264 MP4 first. Only add verified public links. Projects without a public repository still expose their case-study details.
 
-The work section searches titles, subjects, descriptions, and tools. Filters and search combine. Project cards stay in their original order when opened; one card is expanded at a time. The grid uses two columns on desktop and one below 540px.
+The work section searches titles, subjects, descriptions, and tools. Filters and search combine. Hovering a card lifts it, reveals the summary and first three build points beneath it, and makes the background particles around it vibrate in the project's accent colour. Clicking opens the project page. Touch devices skip the hover reveal and open the page on tap. Reduced-motion users get no lift and no particle agitation. The grid uses two columns on desktop and one below 540px, and the search and category filter are kept when returning from a project page.
 
 Project previews are labelled **concept studies**. They illustrate documented systems and ideas; they are not application screenshots, experimental results, or performance measurements. To introduce real screenshots, add reviewed assets under `public/`, include useful alt text, and update `ProjectArtwork` while retaining a stable aspect ratio. The thesis explainer uses the actual presentation images.
 
