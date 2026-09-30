@@ -10,6 +10,8 @@ type Particle = {
   vy: number;
   hue: number;
   life: number;
+  // Fixed random offset so a page's colour still varies a little from particle to particle.
+  tint: number;
   // Recent positions, newest first, as x,y pairs. Redrawn every frame so nothing accumulates on the canvas.
   trail: Float32Array;
 };
@@ -17,6 +19,11 @@ type Particle = {
 const BACKGROUND_SPEED = 0.5;
 const TRAIL_POINTS = 32;
 const DENSITY_DIVISOR = 1800;
+
+const lerpHue = (from: number, to: number, amount: number) => {
+  const delta = ((to - from + 540) % 360) - 180;
+  return (from + delta * amount + 360) % 360;
+};
 
 const field = (x: number, y: number, t: number) => {
   const s1 = Math.sin(y * 0.011 + t * 0.00042);
@@ -57,6 +64,9 @@ export function FluidField() {
     const HALO_PAD = 110;
     // Eased 0..1 strength of the soft glow under the cursor.
     let glowLevel = 0;
+    // How far particles have moved towards the open project page's colour, and that colour.
+    let themeMix = 0;
+    let themeHue = 200;
 
     const resetParticle = (particle: Particle, scatter = true) => {
       particle.x = scatter ? Math.random() * width : pointer.x;
@@ -88,7 +98,7 @@ export function FluidField() {
         : Math.min(1140, Math.max(390, Math.floor((width * height) / DENSITY_DIVISOR)));
 
       particles = Array.from({ length: targetCount }, () => {
-        const particle: Particle = { x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0, hue: 0, life: 0, trail: new Float32Array(TRAIL_POINTS * 2) };
+        const particle: Particle = { x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0, hue: 0, life: 0, tint: Math.random() * 24, trail: new Float32Array(TRAIL_POINTS * 2) };
         resetParticle(particle);
         return particle;
       });
@@ -210,14 +220,23 @@ export function FluidField() {
         }
       }
 
+      const pageHue = fieldBus.pageHue;
+      if (pageHue !== null) {
+        themeHue = themeMix < 0.02 ? pageHue : lerpHue(themeHue, pageHue, 0.08);
+        themeMix += (1 - themeMix) * 0.06;
+      } else {
+        themeMix *= 0.94;
+        if (themeMix < 0.01) themeMix = 0;
+      }
+
       glowLevel += ((pointerFresh ? 1 : 0) - glowLevel) * 0.15;
       if (glowLevel > 0.01) {
         // Drawn on a freshly cleared canvas each frame, so it stays local to the cursor and never builds up.
         const glowRadius = 52.5;
         const glow = context.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, glowRadius);
-        glow.addColorStop(0, `rgba(112, 225, 209, ${0.16 * glowLevel})`);
-        glow.addColorStop(0.36, `rgba(242, 184, 102, ${0.07 * glowLevel})`);
-        glow.addColorStop(1, "rgba(112, 225, 209, 0)");
+        glow.addColorStop(0, `hsla(${lerpHue(173, themeHue, themeMix)}, 70%, 62%, ${0.16 * glowLevel})`);
+        glow.addColorStop(0.36, `hsla(${lerpHue(35, themeHue + 25, themeMix)}, 90%, 65%, ${0.07 * glowLevel})`);
+        glow.addColorStop(1, `hsla(${lerpHue(173, themeHue, themeMix)}, 70%, 62%, 0)`);
         context.fillStyle = glow;
         context.beginPath();
         context.arc(pointer.x, pointer.y, glowRadius, 0, Math.PI * 2);
@@ -279,10 +298,11 @@ export function FluidField() {
         trail.copyWithin(2, 0, TRAIL_POINTS * 2 - 2);
         trail[0] = particle.x;
         trail[1] = particle.y;
-        // Head, middle and tail of the trail fade in three steps.
-        addTrail(trail, 0, 10, 0, particle.hue, alpha);
-        addTrail(trail, 10, 21, 1, particle.hue, alpha);
-        addTrail(trail, 21, TRAIL_POINTS - 1, 2, particle.hue, alpha);
+        // Head, middle and tail of the trail fade in three steps. Excited particles keep the hovered card's colour.
+        const drawHue = excited || themeMix === 0 ? particle.hue : lerpHue(particle.hue, themeHue + particle.tint, themeMix);
+        addTrail(trail, 0, 10, 0, drawHue, alpha);
+        addTrail(trail, 10, 21, 1, drawHue, alpha);
+        addTrail(trail, 21, TRAIL_POINTS - 1, 2, drawHue, alpha);
       }
 
       flushTrails();
@@ -297,6 +317,7 @@ export function FluidField() {
       agitation = 0;
       halo = null;
       glowLevel = 0;
+      themeMix = 0;
       if (document.hidden) return;
       if (reducedMotion) drawStaticField();
       else animationFrame = requestAnimationFrame(draw);

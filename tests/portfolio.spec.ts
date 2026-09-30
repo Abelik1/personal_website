@@ -116,6 +116,39 @@ test("hovering a video card plays its clip", async ({ page, isMobile }) => {
   await expect.poll(() => card.locator("video").evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
 });
 
+test("each project page tints the background particles with its own colour", async ({ page, isMobile }) => {
+  test.skip(isMobile, "the particle colour check samples a desktop-sized canvas");
+  const medianHue = () => page.locator("canvas.fluid-field").evaluate((canvas: HTMLCanvasElement) => {
+    // Sample a small copy: reading the full-size canvas is slow when other tests share the machine.
+    const small = document.createElement("canvas");
+    small.width = 480;
+    small.height = 270;
+    const context = small.getContext("2d")!;
+    context.drawImage(canvas, 0, 0, small.width, small.height);
+    const data = context.getImageData(0, 0, small.width, small.height).data;
+    const hues: number[] = [];
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] < 12) continue;
+      const [r, g, b] = [data[i] / 255, data[i + 1] / 255, data[i + 2] / 255];
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      if (max - min < 0.05) continue;
+      const h = max === r ? ((g - b) / (max - min)) % 6 : max === g ? (b - r) / (max - min) + 2 : (r - g) / (max - min) + 4;
+      hues.push((h * 60 + 360) % 360);
+    }
+    hues.sort((a, b) => a - b);
+    return hues.length > 30 ? hues[Math.floor(hues.length / 2)] : -1;
+  });
+  for (const [slug, hue] of [["eurohpc-demo-lab", 268], ["inhabis", 26], ["carcove", 48]] as const) {
+    await page.goto(`/#project/${slug}`);
+    await page.reload();
+    await expect.poll(medianHue, { timeout: 15000 }).toBeGreaterThan(-1);
+    await page.waitForTimeout(3500);
+    const median = await medianHue();
+    const distance = Math.abs(((median - (hue + 12) + 540) % 360) - 180);
+    expect(distance, `${slug} median hue ${median}`).toBeLessThan(30);
+  }
+});
+
 test("thesis links survive refresh, navigation and browser history", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Thesis", exact: true }).first().click();

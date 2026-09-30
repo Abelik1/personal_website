@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { FluidField } from "./FluidField";
-import { agitateField, calmField } from "./fieldBus";
+import { agitateField, calmField, fieldBus } from "./fieldBus";
 import { fallbackVisual, skillVisuals } from "./skillBrands";
 import { ExperienceTimeline } from "./ExperienceTimeline";
 import { ProjectArtwork } from "./ProjectArtwork";
@@ -885,6 +885,7 @@ export default function App() {
         : activeView === "project" && project
           ? `${project.title} | Alexander Belik`
           : "Alexander Belik | Theoretical Physics & Scientific Computing";
+    fieldBus.pageHue = activeView === "project" && project ? project.hue : null;
     const leftProject = previousView.current === "project" && activeView === "portfolio";
     previousView.current = activeView;
     if (activeView === "project") {
