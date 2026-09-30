@@ -10,9 +10,13 @@ type Particle = {
   vy: number;
   hue: number;
   life: number;
+  // Recent positions, newest first, as x,y pairs. Redrawn every frame so nothing accumulates on the canvas.
+  trail: Float32Array;
 };
 
 const BACKGROUND_SPEED = 0.5;
+const TRAIL_POINTS = 32;
+const DENSITY_DIVISOR = 1800;
 
 const field = (x: number, y: number, t: number) => {
   const s1 = Math.sin(y * 0.011 + t * 0.00042);
@@ -61,6 +65,10 @@ export function FluidField() {
       particle.vy = 0;
       particle.hue = 164 + Math.random() * 50;
       particle.life = Math.random() * 120;
+      for (let i = 0; i < TRAIL_POINTS; i++) {
+        particle.trail[i * 2] = particle.x;
+        particle.trail[i * 2 + 1] = particle.y;
+      }
     };
 
     const resize = () => {
@@ -75,10 +83,10 @@ export function FluidField() {
 
       const targetCount = reducedMotion
         ? 80
-        : Math.min(760, Math.max(260, Math.floor((width * height) / 2700)));
+        : Math.min(1140, Math.max(390, Math.floor((width * height) / DENSITY_DIVISOR)));
 
       particles = Array.from({ length: targetCount }, () => {
-        const particle: Particle = { x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0, hue: 0, life: 0 };
+        const particle: Particle = { x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0, hue: 0, life: 0, trail: new Float32Array(TRAIL_POINTS * 2) };
         resetParticle(particle);
         return particle;
       });
@@ -113,6 +121,14 @@ export function FluidField() {
       }
     };
 
+    const strokeTrail = (trail: Float32Array, from: number, to: number, style: string) => {
+      context.strokeStyle = style;
+      context.beginPath();
+      context.moveTo(trail[from * 2], trail[from * 2 + 1]);
+      for (let i = from + 1; i <= to; i++) context.lineTo(trail[i * 2], trail[i * 2 + 1]);
+      context.stroke();
+    };
+
     const draw = (time: number) => {
       if (document.hidden) return;
       // Cap drawing near 60 fps so high-refresh displays keep the original speed.
@@ -126,11 +142,11 @@ export function FluidField() {
         return;
       }
 
+      // A clean canvas every frame: trails are redrawn from history, so no haze builds up behind the particles.
       context.globalCompositeOperation = "source-over";
-      context.fillStyle = "rgba(16, 20, 19, 0.09)";
-      context.fillRect(0, 0, width, height);
-      context.globalCompositeOperation = "lighter";
+      context.clearRect(0, 0, width, height);
       context.lineWidth = 1.18;
+      context.lineCap = "round";
 
       const pointerFresh = pointer.active && time - pointer.lastMove < 900;
 
@@ -161,6 +177,10 @@ export function FluidField() {
           spark.vx = (Math.random() - 0.5) * 3;
           spark.vy = (Math.random() - 0.5) * 3;
           spark.life = 380;
+          for (let k = 0; k < TRAIL_POINTS; k++) {
+            spark.trail[k * 2] = sx;
+            spark.trail[k * 2 + 1] = sy;
+          }
         }
       } else {
         agitation *= 0.9;
@@ -168,25 +188,6 @@ export function FluidField() {
           agitation = 0;
           halo = null;
         }
-      }
-
-      if (pointerFresh) {
-        const glowRadius = 52.5;
-        const glow = context.createRadialGradient(
-          pointer.x,
-          pointer.y,
-          0,
-          pointer.x,
-          pointer.y,
-          glowRadius
-        );
-        glow.addColorStop(0, "rgba(112, 225, 209, 0.12)");
-        glow.addColorStop(0.36, "rgba(242, 184, 102, 0.055)");
-        glow.addColorStop(1, "rgba(112, 225, 209, 0)");
-        context.fillStyle = glow;
-        context.beginPath();
-        context.arc(pointer.x, pointer.y, glowRadius, 0, Math.PI * 2);
-        context.fill();
       }
 
       for (const particle of particles) {
@@ -239,12 +240,15 @@ export function FluidField() {
 
         const alpha = excited
           ? Math.min(0.85, 0.24 + Math.hypot(particle.vx, particle.vy) * 0.2)
-          : Math.min(0.52, 0.09 + Math.hypot(particle.vx, particle.vy) * 0.14);
-        context.strokeStyle = `hsla(${particle.hue}, 92%, 68%, ${alpha})`;
-        context.beginPath();
-        context.moveTo(particle.px, particle.py);
-        context.lineTo(particle.x, particle.y);
-        context.stroke();
+          : Math.min(0.6, 0.14 + Math.hypot(particle.vx, particle.vy) * 0.16);
+        const trail = particle.trail;
+        trail.copyWithin(2, 0, TRAIL_POINTS * 2 - 2);
+        trail[0] = particle.x;
+        trail[1] = particle.y;
+        // Head, middle and tail of the trail fade in three steps.
+        strokeTrail(trail, 0, 10, `hsla(${particle.hue}, 92%, 68%, ${alpha})`);
+        strokeTrail(trail, 10, 21, `hsla(${particle.hue}, 92%, 68%, ${alpha * 0.5})`);
+        strokeTrail(trail, 21, TRAIL_POINTS - 1, `hsla(${particle.hue}, 92%, 68%, ${alpha * 0.22})`);
       }
 
       animationFrame = requestAnimationFrame(draw);
