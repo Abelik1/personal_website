@@ -55,6 +55,8 @@ export function FluidField() {
     let agitation = 0;
     let halo: { x0: number; y0: number; x1: number; y1: number; hue: number } | null = null;
     const HALO_PAD = 110;
+    // Eased 0..1 strength of the soft glow under the cursor.
+    let glowLevel = 0;
 
     const resetParticle = (particle: Particle, scatter = true) => {
       particle.x = scatter ? Math.random() * width : pointer.x;
@@ -208,6 +210,20 @@ export function FluidField() {
         }
       }
 
+      glowLevel += ((pointerFresh ? 1 : 0) - glowLevel) * 0.15;
+      if (glowLevel > 0.01) {
+        // Drawn on a freshly cleared canvas each frame, so it stays local to the cursor and never builds up.
+        const glowRadius = 52.5;
+        const glow = context.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, glowRadius);
+        glow.addColorStop(0, `rgba(112, 225, 209, ${0.16 * glowLevel})`);
+        glow.addColorStop(0.36, `rgba(242, 184, 102, ${0.07 * glowLevel})`);
+        glow.addColorStop(1, "rgba(112, 225, 209, 0)");
+        context.fillStyle = glow;
+        context.beginPath();
+        context.arc(pointer.x, pointer.y, glowRadius, 0, Math.PI * 2);
+        context.fill();
+      }
+
       for (const particle of particles) {
         particle.px = particle.x;
         particle.py = particle.y;
@@ -280,6 +296,7 @@ export function FluidField() {
       pointer.active = false;
       agitation = 0;
       halo = null;
+      glowLevel = 0;
       if (document.hidden) return;
       if (reducedMotion) drawStaticField();
       else animationFrame = requestAnimationFrame(draw);
