@@ -121,12 +121,30 @@ export function FluidField() {
       }
     };
 
-    const strokeTrail = (trail: Float32Array, from: number, to: number, style: string) => {
-      context.strokeStyle = style;
-      context.beginPath();
-      context.moveTo(trail[from * 2], trail[from * 2 + 1]);
-      for (let i = from + 1; i <= to; i++) context.lineTo(trail[i * 2], trail[i * 2 + 1]);
-      context.stroke();
+    // Trails are grouped by trail segment, quantised hue and quantised alpha, so a frame costs a
+    // hundred or so stroke calls instead of several thousand.
+    const HUE_STEP = 4;
+    const GROUP_ALPHA = [1, 0.5, 0.22];
+    let buckets = new Map<number, Path2D>();
+    const addTrail = (trail: Float32Array, from: number, to: number, group: number, hue: number, alpha: number) => {
+      const key = group * 100000 + Math.round(hue / HUE_STEP) * 100 + Math.round(alpha * 12);
+      let path = buckets.get(key);
+      if (!path) {
+        path = new Path2D();
+        buckets.set(key, path);
+      }
+      path.moveTo(trail[from * 2], trail[from * 2 + 1]);
+      for (let i = from + 1; i <= to; i++) path.lineTo(trail[i * 2], trail[i * 2 + 1]);
+    };
+    const flushTrails = () => {
+      for (const [key, path] of buckets) {
+        const group = Math.floor(key / 100000);
+        const hue = (Math.floor(key / 100) % 1000) * HUE_STEP;
+        const alpha = ((key % 100) / 12) * GROUP_ALPHA[group];
+        context.strokeStyle = `hsla(${hue}, 92%, 68%, ${alpha})`;
+        context.stroke(path);
+      }
+      buckets = new Map();
     };
 
     const draw = (time: number) => {
@@ -246,11 +264,12 @@ export function FluidField() {
         trail[0] = particle.x;
         trail[1] = particle.y;
         // Head, middle and tail of the trail fade in three steps.
-        strokeTrail(trail, 0, 10, `hsla(${particle.hue}, 92%, 68%, ${alpha})`);
-        strokeTrail(trail, 10, 21, `hsla(${particle.hue}, 92%, 68%, ${alpha * 0.5})`);
-        strokeTrail(trail, 21, TRAIL_POINTS - 1, `hsla(${particle.hue}, 92%, 68%, ${alpha * 0.22})`);
+        addTrail(trail, 0, 10, 0, particle.hue, alpha);
+        addTrail(trail, 10, 21, 1, particle.hue, alpha);
+        addTrail(trail, 21, TRAIL_POINTS - 1, 2, particle.hue, alpha);
       }
 
+      flushTrails();
       animationFrame = requestAnimationFrame(draw);
     };
 
